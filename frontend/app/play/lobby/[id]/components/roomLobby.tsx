@@ -8,6 +8,7 @@ import { leaveRoom } from "@/api/room";
 import { usePlayerStore } from "@/store/usePlayerStore";
 import { useRouter } from "next/navigation";
 import { sendMessage } from "@/api/message";
+import { startGame } from "@/api/gameSession";
 
 const RoomLobby = () => {
 
@@ -93,6 +94,23 @@ const RoomLobby = () => {
             </span>
           </div>
         </div>
+
+        {player.id === owner.id && (
+          <div className="mt-4">
+            <button className="px-4 py-2 bg-purple-600 text-white rounded-4xl"
+            onClick={async () => {
+              try {
+                const session = await startGame(currentRoom.id);
+                router.push(`/play/game/${session.id}`);
+              }
+              catch (error) {
+                throw new Error(error as any); 
+              }
+            }}>
+              Start Game
+            </button>
+          </div>
+        )}
   
       </div>
     </div>
