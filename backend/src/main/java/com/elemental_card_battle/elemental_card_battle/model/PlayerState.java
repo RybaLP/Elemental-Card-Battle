@@ -1,5 +1,6 @@
 package com.elemental_card_battle.elemental_card_battle.model;
 
+import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardInstance;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,7 +14,7 @@ public class PlayerState {
     String playerId;
 
     @Builder.Default
-    private List<Card> currentHand = new ArrayList<>();
+    private List<CardInstance> currentHand = new ArrayList<>();
 
     @Builder.Default
     private List<Card> wonCards = new ArrayList<>();
@@ -24,5 +25,5 @@ public class PlayerState {
     @Builder.Default
     private boolean hasPlayedThisTurn = false;
 
-    private Card selectedCard;
+    private CardInstance selectedCard;
 }

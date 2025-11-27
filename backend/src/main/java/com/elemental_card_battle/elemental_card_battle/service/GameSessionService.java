@@ -1,5 +1,6 @@
 package com.elemental_card_battle.elemental_card_battle.service;
 
+import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardInstance;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardPlayDto;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.RoundResultDto;
 import com.elemental_card_battle.elemental_card_battle.manager.GameSessionManager;
@@ -24,11 +25,8 @@ public class GameSessionService {
     public void playPlayerCard (CardPlayDto cardPlayDto) {
         GameSession gameSession = gameSessionManager.getSessionById(cardPlayDto.getSessionId());
         boolean bothPlayed = gameSessionManager.playerPlayCard(cardPlayDto);
-        Card card = cardRepository.findById(cardPlayDto.getCardId())
-                .orElseThrow(() -> new IllegalStateException("Could not find that card"));
 
-//        update
-        gameSessionBroadcaster.broadcastSelectCard(cardPlayDto.getSessionId(), cardPlayDto.getPlayerId(), card);
+//        gameSessionBroadcaster.broadcastSelectCard(cardPlayDto.getSessionId(), cardPlayDto.getPlayerId(),cardInstance);
 
 //        if 2 players played, resolve that round
         if (bothPlayed) {
@@ -45,8 +43,8 @@ public class GameSessionService {
         PlayerState p1 = session.getPlayer1();
         PlayerState p2 = session.getPlayer2();
 
-        Card p1Card = p1.getSelectedCard();
-        Card p2Card = p2.getSelectedCard();
+        CardInstance p1Card = p1.getSelectedCard();
+        CardInstance p2Card = p2.getSelectedCard();
 
 //        waits for both players select their card to play
         if (p1Card == null || p2Card == null) return;
@@ -117,7 +115,7 @@ public class GameSessionService {
     }
 
 
-    private String getRoundWinner (Card p1Card, Card p2Card, String p1Id, String p2Id) {
+    private String getRoundWinner (CardInstance p1Card, CardInstance p2Card, String p1Id, String p2Id) {
 
         // if both players played card with the exact same elemental type (higher power wins)
         if (p1Card.getElementalType().equals(p2Card.getElementalType())) {

@@ -1,7 +1,7 @@
 package com.elemental_card_battle.elemental_card_battle.util;
 
+import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardInstance;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.RoundResultDto;
-import com.elemental_card_battle.elemental_card_battle.model.Card;
 import com.elemental_card_battle.elemental_card_battle.model.GameSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -43,7 +43,7 @@ public class GameSessionBroadcaster {
                         "session", gameSession));
     }
 
-    public void broadcastSelectCard(String sessionId, String playerId, Card card) {
+    public void broadcastSelectCard(String sessionId, String playerId, CardInstance card) {
         simpMessagingTemplate.convertAndSend("/topic/game/" + sessionId + "/card",
                 Map.of(
                         "event", "CARD_SELECTED",
