@@ -1,7 +1,6 @@
 "use client"
 
 import { useGameSessionStore } from "@/store/useGameSessionStore";
-import { useEffect } from "react";
 
 
 const BattleField = () => {
@@ -12,18 +11,22 @@ const BattleField = () => {
 
   return (
 
-    <div className="flex flex-row">
-      {selectedCard && (
+    <div className="w-full">
+      
+      <div className="w-1/2 flex items-center justify-center">
+        {selectedCard && (
         <div>
-          <img src={selectedCard.imageUrl} alt={selectedCard.name}/>
+          <img src={selectedCard.imageUrl} alt={selectedCard.name} width={500}/>
         </div>
-      )}
+        )}
+      </div>
 
-      {enemySelectedCard && (
+        <div className="w-1/2 flex items-center justify-center">
+        {enemySelectedCard && (
 
         isRevealing ? (
         <div>
-          <img src={enemySelectedCard.imageUrl} alt={enemySelectedCard.name} />
+          <img src={enemySelectedCard.imageUrl} alt={enemySelectedCard.name} width={500} />
         </div>
         ) : (
         <div>
@@ -31,6 +34,10 @@ const BattleField = () => {
         </div>
         )
       )}
+
+      </div>
+
+      
 
     </div>
   )

@@ -13,11 +13,11 @@ export const startGame = async (roomId : string) => {
     return res.json();
 }
 
-export const selectCard = async (sessionId : string, playerId : string, cardId : number) => {
+export const selectCard = async (sessionId : string, instanceId : string, playerId : string) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/game/select` , {
         method : "POST",
         headers : {"Content-Type" : "application/json"},
-        body : JSON.stringify({sessionId, playerId, cardId})
+        body : JSON.stringify({sessionId, instanceId, playerId})
     })
 
     if (!res.ok) {

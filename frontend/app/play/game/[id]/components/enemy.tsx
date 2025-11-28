@@ -21,6 +21,7 @@ const Enemy = () => {
                                 height={144}
                                 className="w-full h-full object-cover"
                             />
+
                         </div>
                     ))}
                 </div>

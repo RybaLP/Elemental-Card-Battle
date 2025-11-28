@@ -19,6 +19,8 @@ interface GameSessionStore {
 
   isRevealing : boolean;
 
+  hoveredCard : Card | null;
+
   isGameOver: () => boolean;
 
   setSession: (session: GameSession) => void;
@@ -36,6 +38,8 @@ interface GameSessionStore {
 
   setIsRevealing : (value : boolean) => void;
 
+  setHoveredCard : (card : Card | null) => void;
+
 }
 
 export const useGameSessionStore = create<GameSessionStore>((set, get) => ({
@@ -48,6 +52,7 @@ export const useGameSessionStore = create<GameSessionStore>((set, get) => ({
   myWonRounds : [],
   enemyWonRounds : [],
   isRevealing : false,
+  hoveredCard : null,
 
   setSession: (session) => set({ session }),
 
@@ -91,6 +96,8 @@ export const useGameSessionStore = create<GameSessionStore>((set, get) => ({
 
   setIsRevealing : (value) => {
     set({isRevealing : value})
-  }
+  },
+
+  setHoveredCard : (value) => set({hoveredCard : value})
 
 }));

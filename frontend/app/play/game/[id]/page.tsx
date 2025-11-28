@@ -36,7 +36,6 @@ const Page = () => {
       
       <MyPov
         cardsInHand={myPlayer.currentHand}
-        playerId={player.id}
         sessionId={session.id}
         nickname={player.nickname}
       />

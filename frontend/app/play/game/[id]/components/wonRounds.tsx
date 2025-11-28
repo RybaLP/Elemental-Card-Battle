@@ -34,7 +34,7 @@ const WonRounds = ({ wonRounds }: Props) => {
                   src={round.imageUrl} 
                   alt={`${type} icon`}
                   fill
-                  sizes="48px"
+                  sizes="10px"
                   className="object-contain"
                 />
               </div>
