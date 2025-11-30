@@ -5,8 +5,8 @@ import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardPlayD
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.RoundResultDto;
 import com.elemental_card_battle.elemental_card_battle.manager.GameSessionManager;
 import com.elemental_card_battle.elemental_card_battle.model.*;
-import com.elemental_card_battle.elemental_card_battle.repository.CardRepository;
 import com.elemental_card_battle.elemental_card_battle.util.GameSessionBroadcaster;
+import com.elemental_card_battle.elemental_card_battle.util.TurnTimer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,34 +14,82 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class GameSessionService {
+public class GameSessionService  {
 
     private final GameSessionManager gameSessionManager;
     private final GameSessionBroadcaster gameSessionBroadcaster;
-    private final CardRepository cardRepository;
     private final CardService cardService;
     private final RoundIconService roundIconService;
+    private final TurnTimer turnTimer;
 
     public void playPlayerCard (CardPlayDto cardPlayDto) {
+
         GameSession gameSession = gameSessionManager.getSessionById(cardPlayDto.getSessionId());
+
+        if (gameSession.isTimerActive() == false) {
+            gameSession.setTimerActive(true);
+            gameSessionBroadcaster.broadcastStartCountdown(gameSession);
+            turnTimer.startTimer(gameSession,15,() -> playRandomCard(gameSession.getId()));
+        }
+
+
         boolean bothPlayed = gameSessionManager.playerPlayCard(cardPlayDto);
 
-//        gameSessionBroadcaster.broadcastSelectCard(cardPlayDto.getSessionId(), cardPlayDto.getPlayerId(),cardInstance);
-
-//        if 2 players played, resolve that round
         if (bothPlayed) {
             resolveRound(gameSession);
             gameSessionBroadcaster.broadcastGameUpdate(gameSession);
         }
     }
 
-    public void resolveRound (GameSession session) {
+
+    public void playRandomCard (String gameSessionId) {
+
+        GameSession gameSession = gameSessionManager.getSessionById(gameSessionId);
+
+        try {
+
+            PlayerState p1 = gameSession.getPlayer1();
+            PlayerState p2 = gameSession.getPlayer2();
+            Random random = new Random();
+
+            if (p1.getSelectedCard() == null) {
+                CardInstance card = drawRandomCard(p1,random);
+                gameSessionBroadcaster.broadcastRandomCard(gameSession, p1.getPlayerId(),card);
+            }
+
+            if (p2.getSelectedCard() == null){
+                CardInstance card = drawRandomCard(p2,random);
+                gameSessionBroadcaster.broadcastRandomCard(gameSession, p2.getPlayerId(), card);
+            }
+
+            resolveRound(gameSession);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+//    generating random card from currenthand
+    private CardInstance drawRandomCard (PlayerState playerState, Random random) {
+            List<CardInstance> hand = playerState.getCurrentHand();
+            int randomIndex = random.nextInt(hand.size());
+            playerState.setSelectedCard(hand.get(randomIndex));
+            return playerState.getSelectedCard();
+    }
+
+    public void resolveRound (GameSession gameSession) {
+
+//        stop timer
+        gameSession.setTimerActive(false);
+        turnTimer.cancelTimer();
+
+        gameSessionBroadcaster.broadcastStopCountdown(gameSession);
 
 //        checking if session has finished
-        if (session.isOver()) return;
+        if (gameSession.isOver()) return;
 
-        PlayerState p1 = session.getPlayer1();
-        PlayerState p2 = session.getPlayer2();
+        PlayerState p1 = gameSession.getPlayer1();
+        PlayerState p2 = gameSession.getPlayer2();
 
         CardInstance p1Card = p1.getSelectedCard();
         CardInstance p2Card = p2.getSelectedCard();
@@ -101,19 +149,23 @@ public class GameSessionService {
                                         .p2WonRounds(p2.getWonRounds())
                                             .p1Id(p1.getPlayerId())
                                                 .p2Id(p2.getPlayerId())
-                                                    .build();
+                                                    .p1Cards(p1.getCurrentHand())
+                                                        .p2Cards(p2.getCurrentHand())
+                                                            .build();
 
-        gameSessionBroadcaster.broadcastRoundWinner(session.getId(), roundResultDto);
+        gameSessionBroadcaster.broadcastRoundWinner(gameSession.getId(), roundResultDto);
 
 
-        String gameWinnerId  = checkIfSomeoneWon(session);
+        String gameWinnerId  = checkIfSomeoneWon(gameSession);
 
         if (gameWinnerId != null) {
-            session.setWinnerId(gameWinnerId);
-            session.setOver(true);
+            gameSession.setWinnerId(gameWinnerId);
+            Player player = gameSessionManager.getPlayerById(gameWinnerId);
+
+            gameSessionBroadcaster.broadcastGameOver(gameSession,player.getNickname());
+            gameSession.setOver(true);
         }
     }
-
 
     private String getRoundWinner (CardInstance p1Card, CardInstance p2Card, String p1Id, String p2Id) {
 
@@ -152,27 +204,23 @@ public class GameSessionService {
     }
 
 
-    private boolean hasPlayerWon (PlayerState playerState) {
+    private boolean hasPlayerWon(PlayerState playerState) {
         List<WonRound> rounds = playerState.getWonRounds();
 
-        Set<String> uniqueElementColor = new HashSet<>();
-        Map<String, Set<String>> elementColors = new HashMap<>();
+        Map<String, Integer> colorCounts = new HashMap<>();
 
         for (WonRound round : rounds) {
             String color = round.getColor();
-            String element = round.getElementalType();
-            uniqueElementColor.add(color + "-" + element);
-            elementColors.computeIfAbsent(element, k -> new HashSet<>()).add(color);
+            colorCounts.put(color, colorCounts.getOrDefault(color, 0) + 1);
         }
 
-//        if 3 different colors with 3 different elementals
-        if (uniqueElementColor.size() >= 3) return true;
-
-//        if 3 same collors from the same elemental
-        for (Set<String> colors : elementColors.values()) {
-            if (colors.size() >= 3) return true;
+        for (int count : colorCounts.values()) {
+            if (count >= 3) {
+                return true;
+            }
         }
 
         return false;
     }
+
 }

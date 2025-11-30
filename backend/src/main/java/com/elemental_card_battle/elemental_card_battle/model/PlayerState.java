@@ -17,9 +17,6 @@ public class PlayerState {
     private List<CardInstance> currentHand = new ArrayList<>();
 
     @Builder.Default
-    private List<Card> wonCards = new ArrayList<>();
-
-    @Builder.Default
     private List<WonRound> wonRounds = new ArrayList<>();
 
     @Builder.Default

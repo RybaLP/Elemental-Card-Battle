@@ -16,4 +16,10 @@ public class RoundResultDto {
 
     private List<WonRound> p1WonRounds;
     private List<WonRound> p2WonRounds;
+
+    private CardInstance p1Card;
+    private CardInstance p2Card;
+
+    private List<CardInstance> p1Cards;
+    private List<CardInstance> p2Cards;
 }

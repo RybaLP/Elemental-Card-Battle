@@ -16,4 +16,6 @@ public class GameSession {
 
     private int turnNumber;
     private boolean isOver;
+
+    private boolean timerActive;
 }

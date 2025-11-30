@@ -5,6 +5,7 @@ import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardPlayD
 import com.elemental_card_battle.elemental_card_battle.model.*;
 import com.elemental_card_battle.elemental_card_battle.service.CardService;
 import com.elemental_card_battle.elemental_card_battle.util.GameSessionBroadcaster;
+import com.elemental_card_battle.elemental_card_battle.util.TurnTimer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,22 +22,6 @@ public class GameSessionManager {
     private final Lobby lobby;
     private final Map<String, GameSession> sessions = new ConcurrentHashMap<>();
 
-//
-//    public PlayerState getPlayerById(String sessionId, String playerId) {
-//        GameSession session = getSessionById(sessionId);
-//        if (session == null) throw new IllegalStateException("Session not found");
-//
-//        if (session.getPlayer1().getPlayerId().equals(playerId)) {
-//            return session.getPlayer1();
-//        } else if (session.getPlayer2().getPlayerId().equals(playerId)) {
-//            return session.getPlayer2();
-//        } else {
-//            throw new IllegalStateException("Player not found in session");
-//        }
-//
-//    }
-
-
     public GameSession createSession (String roomId) {
 
         Room room = lobby.getRoom(roomId);
@@ -51,6 +36,7 @@ public class GameSessionManager {
                 .player1(PlayerState.builder().playerId(p1.getId()).build())
                 .player2(PlayerState.builder().playerId(p2.getId()).build())
                 .roomId(roomId)
+                .timerActive(false)
                 .build();
 
         session.getPlayer1().setCurrentHand(cardService.generateInitialHand());
@@ -73,7 +59,6 @@ public class GameSessionManager {
         sessions.remove(id);
     }
 
-
     public boolean playerPlayCard (CardPlayDto cardPlayDto) {
 
         GameSession gameSession = getSessionById(cardPlayDto.getSessionId());
@@ -94,7 +79,6 @@ public class GameSessionManager {
         playerState.setHasPlayedThisTurn(true);
 
 
-//        gameSessionBroadcaster.broadcastGameUpdate(gameSession);
 
         boolean bothPlayed =
                 gameSession.getPlayer1().isHasPlayedThisTurn() && gameSession.getPlayer2().isHasPlayedThisTurn();
@@ -102,5 +86,10 @@ public class GameSessionManager {
         gameSessionBroadcaster.broadcastSelectCard(gameSession.getId(), cardPlayDto.getPlayerId(), cardInstance);
 
         return bothPlayed;
+    }
+
+    public Player getPlayerById (String playerId) {
+        Player player = lobby.getPlayer(playerId);
+        return player;
     }
 }

@@ -60,9 +60,52 @@ public class GameSessionBroadcaster {
                 "p1Id" , roundResultDto.getP1Id(),
                 "p2Id" , roundResultDto.getP2Id(),
                 "p1Rounds" , roundResultDto.getP1WonRounds(),
-                "p2Rounds" , roundResultDto.getP2WonRounds()
+                "p2Rounds" , roundResultDto.getP2WonRounds(),
+                "p1Cards" , roundResultDto.getP1Cards(),
+                "p2Cards", roundResultDto.getP2Cards()
         );
 
         simpMessagingTemplate.convertAndSend("/topic/game/" + sessionId + "/winner", payload);
+    }
+
+
+    public void broadcastCountDown (GameSession gameSession, int timeLeft) {
+        simpMessagingTemplate.convertAndSend("/topic/game/" + gameSession.getId() + "/countdown",
+                Map.of(
+                        "event", "countDown",
+                        "seconds", timeLeft
+                ));
+    }
+
+    public void broadcastStartCountdown (GameSession gameSession) {
+        simpMessagingTemplate.convertAndSend("/topic/game/" + gameSession.getId() + "/countdown/start",
+                Map.of(
+                        "event" , "startCountdown"
+                )
+        );
+    }
+
+    public void broadcastStopCountdown (GameSession gameSession) {
+        simpMessagingTemplate.convertAndSend("/topic/game/" + gameSession.getId() + "/countdown/stop",
+                Map.of("event", "stopCountdown"));
+    }
+
+    public void broadcastRandomCard(GameSession gameSession, String playerId, CardInstance cardInstance) {
+        Map<String, Object> payload = Map.of(
+                "event", "randomCard",
+                "playerId", playerId,
+                "card" , cardInstance
+        );
+        simpMessagingTemplate.convertAndSend("/topic/game/" + gameSession.getId() + "/randomCard", payload);
+    }
+
+
+    public void broadcastGameOver(GameSession gameSession, String winerNickname) {
+        simpMessagingTemplate.convertAndSend("/topic/game/" + gameSession.getId() + "/game-over",
+                Map.of(
+                        "event" , "gameOver",
+                        "gameWiner" , winerNickname,
+                        "message" , "GAME OVER, player" + winerNickname + "won the game!"
+                ));
     }
 }
