@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Client } from "@stomp/stompjs";
+import { Stomp } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { useGameSessionStore } from "@/store/useGameSessionStore";
 
@@ -12,13 +12,10 @@ export const useGameSessionWS = (sessionId : string, playerId : string) => {
 
     useEffect( () =>{
         if (!sessionId) return;
+
         const socket = new SockJS(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ws`);
         
-        const client = new Client({
-            webSocketFactory : () => socket,
-            reconnectDelay : 3000,
-            debug : () => {}
-        })
+        const client = Stomp.over(socket);
 
         client.onConnect = () => {
             client.subscribe(`/topic/game/${sessionId}/state`,
@@ -54,17 +51,14 @@ export const useGameSessionWS = (sessionId : string, playerId : string) => {
                 store.setIsRevealing(true);
 
                 setTimeout (() => {
-                     // verify who is who and set proeply winning points...
                     const myRounds = body.p1Id === playerId ? body.p1Rounds : body.p2Rounds;    
                     const enemyRounds = body.p1Id === playerId ? body.p2Rounds : body.p1Rounds; 
 
                     const myCards = body.p1Id === playerId ? body.p1Cards : body.p2Cards;
 
-                    // set rounds state
                     store.setMyWonRounds(myRounds);
                     store.setEnemyWonRounds(enemyRounds);
 
-                    // restart state (revealing included)
                     store.resetTurn(myCards);
 
                 } , 2500);
@@ -80,7 +74,6 @@ export const useGameSessionWS = (sessionId : string, playerId : string) => {
             }),
 
 
-            // updating state in case, when someone did not select card
             client.subscribe(`/topic/game/${sessionId}/randomCard` , (message) => {
                 const body = JSON.parse(message.body);
                 const store = useGameSessionStore.getState();
@@ -96,8 +89,6 @@ export const useGameSessionWS = (sessionId : string, playerId : string) => {
             }),
 
 
-            // timer section 
-            // enabling timer when first player selects card
             client.subscribe(`/topic/game/${sessionId}/countdown/start`, (message) => {
                 const body = JSON.parse(message.body);
                 const store = useGameSessionStore.getState();
@@ -106,7 +97,6 @@ export const useGameSessionWS = (sessionId : string, playerId : string) => {
                 }
             }),
 
-            // backend broadcasts this, if resolveround is trigerred
             client.subscribe(`/topic/game/${sessionId}/countdown/stop`, (message) => {
                 const body = JSON.parse(message.body);
                 const store = useGameSessionStore.getState();
@@ -127,6 +117,7 @@ export const useGameSessionWS = (sessionId : string, playerId : string) => {
         }
 
         client.activate();
+
         return () => {client.deactivate();}
 
     },[sessionId])

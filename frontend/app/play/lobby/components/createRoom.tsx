@@ -68,17 +68,14 @@ const CreateRoom = () => {
                     >
                         <div className="p-6 border-b border-gray-700">
                             <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
-                                Stwórz Nowy Pokój
+                                Create New Lobby
                             </h2>
-                            <p className="text-gray-400 text-sm mt-1">
-                                Utwórz własny pokój i zaproś znajomych
-                            </p>
                         </div>
 
                         <form onSubmit={handleCreatePublicRoom} className="p-6 space-y-4">
                             <div className="space-y-2">
                                 <label htmlFor="roomName" className="text-gray-300 text-sm font-medium">
-                                    Nazwa Pokoju
+                                    Room Name
                                 </label>
                                 <input 
                                     id="roomName"
@@ -106,7 +103,7 @@ const CreateRoom = () => {
                                              font-medium rounded-lg transition-all duration-200 
                                              focus:outline-none focus:ring-2 focus:ring-gray-500"
                                 >
-                                    Anuluj
+                                    Cancel
                                 </button>
                                 <button
                                     type="submit"
@@ -121,10 +118,10 @@ const CreateRoom = () => {
                                     {isLoading ? (
                                         <div className="flex items-center justify-center">
                                             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                                            Tworzenie...
+                                            Creating...
                                         </div>
                                     ) : (
-                                        `Stwórz "${name || "pokój"}"`
+                                        `Create "${name || "room"}"`
                                     )}
                                 </button>
                             </div>

@@ -30,36 +30,56 @@ const Page = () => {
     initializePlayers(player.id);
   }, [session, player, initializePlayers]);
 
-  if (!session) return <div>Session not found</div>;
+  if (!session) return <div className="flex items-center justify-center h-screen text-white">Session not found</div>;
 
-  if (!myPlayer?.currentHand) return <div>Loading your hand...</div>;
+  if (!myPlayer?.currentHand) return <div className="flex items-center justify-center h-screen text-white">Loading your hand...</div>;
 
   
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full relative">
+    <div className="relative w-full h-screen bg-gradient-to-b from-gray-900 via-blue-950 to-gray-900 overflow-hidden">
+      
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+      
+      {isGameOver && <GameOver />}
 
-      { isGameOver && <GameOver/> }
+      {showTimer && (
+        <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-30">
+          <RoundTimer />
+        </div>
+      )}
 
-
-      <MyPov
-        cardsInHand={myPlayer.currentHand}
-        sessionId={session.id}
-        nickname={player.nickname}
-      />
-
-      {showTimer &&  <RoundTimer/>}
-
-        <div className="absolute top-4 left-4">
+      <div className="absolute top-4 left-0 right-0 flex justify-between px-8 z-10">
+        <div className="flex flex-col items-start">
+          <h3 className="text-white text-lg font-bold mb-2">Your Rounds</h3>
           <WonRounds wonRounds={myWonRounds} />
         </div>
 
-          <BattleField />
-
-        <div className="absolute top-4 right-4">
+        <div className="flex flex-col items-end">
+          <h3 className="text-white text-lg font-bold mb-2">Enemy Rounds</h3>
           <WonRounds wonRounds={enemyWonRounds} />
         </div>
+      </div>
 
-      <Enemy />
+      <div className="flex h-full pt-24 w-full max-w-[1920px] mx-auto">
+        
+        <div className="w-1/4 flex items-center justify-end pr-12">
+          <MyPov
+            cardsInHand={myPlayer.currentHand}
+            sessionId={session.id}
+            nickname={player.nickname}
+          />
+        </div>
+
+        <div className="w-2/4 flex items-center justify-center">
+          <BattleField />
+        </div>
+
+        <div className="w-1/4 flex items-center justify-start pl-12">
+          <Enemy />
+        </div>
+
+      </div>
+
     </div>
   );
 };

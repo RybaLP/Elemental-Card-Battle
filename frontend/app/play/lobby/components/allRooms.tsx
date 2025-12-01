@@ -16,7 +16,7 @@ interface Props {
 const RoomsList = ({allRooms} : Props) => {
 
   const [rooms, setRooms] = useState<Room[]>([]);
-  const { player } = usePlayerStore();
+  const player = usePlayerStore(state => state.player)
   const { currentRoom, setCurrentRoom } = useCurrentRoomStore();
   
   const router = useRouter();
