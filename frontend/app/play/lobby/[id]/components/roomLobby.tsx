@@ -9,12 +9,22 @@ import { usePlayerStore } from "@/store/usePlayerStore";
 import { useRouter } from "next/navigation";
 import { sendMessage } from "@/api/message";
 import { startGame } from "@/api/gameSession";
+import { useEffect } from "react";
+import { useGameSessionStore } from "@/store/useGameSessionStore";
 
 const RoomLobby = () => {
 
   const {player} = usePlayerStore();
-  const { currentRoom, setCurrentRoom } = useCurrentRoomStore();
+  const {currentRoom, setCurrentRoom } = useCurrentRoomStore();
   const router = useRouter();
+
+  useEffect(() => {
+  const { session, isGameOver } = useGameSessionStore.getState();
+  if (!session || isGameOver) {
+    useGameSessionStore.getState().clearGameSession();
+  }
+}, []);
+
 
   if (!currentRoom) {
     return (

@@ -5,6 +5,7 @@ import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { useGameSessionStore } from "@/store/useGameSessionStore";
 
+
 export const useGameSessionWS = (sessionId : string, playerId : string) => {
 
     const {setSession, setEnemyCard} = useGameSessionStore();
@@ -57,14 +58,71 @@ export const useGameSessionWS = (sessionId : string, playerId : string) => {
                     const myRounds = body.p1Id === playerId ? body.p1Rounds : body.p2Rounds;    
                     const enemyRounds = body.p1Id === playerId ? body.p2Rounds : body.p1Rounds; 
 
+                    const myCards = body.p1Id === playerId ? body.p1Cards : body.p2Cards;
+
                     // set rounds state
                     store.setMyWonRounds(myRounds);
                     store.setEnemyWonRounds(enemyRounds);
 
                     // restart state (revealing included)
-                    store.resetTurn();
+                    store.resetTurn(myCards);
 
                 } , 2500);
+            })
+
+            client.subscribe(`/topic/game/${sessionId}/countdown`, (message) => {
+                const body = JSON.parse(message.body);
+                const setTimer = useGameSessionStore.getState().setTimer;
+
+                if (body.event === "countDown") {
+                    setTimer(body.seconds);
+                }
+            }),
+
+
+            // updating state in case, when someone did not select card
+            client.subscribe(`/topic/game/${sessionId}/randomCard` , (message) => {
+                const body = JSON.parse(message.body);
+                const store = useGameSessionStore.getState();
+
+                if (body.event === "randomCard") {
+                    if (store.myPlayer?.playerId === body.playerId){
+                        store.setSelectedCard(body.card);
+                    } else {
+                        store.setEnemyCard(body.card);
+                        store.setIsRevealing(true);
+                    }
+                }
+            }),
+
+
+            // timer section 
+            // enabling timer when first player selects card
+            client.subscribe(`/topic/game/${sessionId}/countdown/start`, (message) => {
+                const body = JSON.parse(message.body);
+                const store = useGameSessionStore.getState();
+                if (body.event === "startCountdown") {
+                    store.setShowTimer(true);
+                }
+            }),
+
+            // backend broadcasts this, if resolveround is trigerred
+            client.subscribe(`/topic/game/${sessionId}/countdown/stop`, (message) => {
+                const body = JSON.parse(message.body);
+                const store = useGameSessionStore.getState();
+                if (body.event === "stopCountdown") {
+                    store.setShowTimer(false);
+                }
+            }),
+
+            client.subscribe(`/topic/game/${sessionId}/game-over` , (message) => {
+                const body = JSON.parse(message.body);
+                const store = useGameSessionStore.getState();
+                
+                if (body.event === "gameOver") {
+                    store.setIsGameOver(true);
+                    store.setGameWinnerMessage(body.message);
+                }
             })
         }
 

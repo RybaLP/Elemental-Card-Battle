@@ -24,7 +24,7 @@ const WonRounds = ({ wonRounds }: Props) => {
             {groups[type].map((round, i) => (
               <div
                 key={i}
-                className="w-12 h-16 relative"
+                className="relative w-[180px] h-[230px]"
                 style={{
                   marginLeft: i === 0 ? 0 : -20, 
                   zIndex: i,                     
@@ -34,7 +34,6 @@ const WonRounds = ({ wonRounds }: Props) => {
                   src={round.imageUrl} 
                   alt={`${type} icon`}
                   fill
-                  sizes="10px"
                   className="object-contain"
                 />
               </div>

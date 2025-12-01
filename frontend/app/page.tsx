@@ -12,7 +12,7 @@ export default function Home() {
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen text-white px-4">
        
       <Image alt="logo" width={200} height={200} src={"/logo-.png"} />      
-        <ContinueButton />
+      <ContinueButton />
         
       </div>
     </main>

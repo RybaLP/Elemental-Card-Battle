@@ -28,3 +28,15 @@ export const selectCard = async (sessionId : string, instanceId : string, player
 
     return res.json();
 }
+
+export const playRandomCard = async (gameSessionId : string) => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/game/randomCard`, {
+        method : "POST",
+        headers : {"Content-Type" : "application/json"},
+        body : JSON.stringify({gameSessionId})
+    })
+
+    if (!res.ok) {
+        throw new Error("Error");
+    }
+}

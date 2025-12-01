@@ -37,8 +37,6 @@ const BattleField = () => {
 
       </div>
 
-      
-
     </div>
   )
 }
