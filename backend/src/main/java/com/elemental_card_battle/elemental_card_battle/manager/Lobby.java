@@ -3,6 +3,7 @@ package com.elemental_card_battle.elemental_card_battle.manager;
 import com.elemental_card_battle.elemental_card_battle.model.Player;
 import com.elemental_card_battle.elemental_card_battle.model.Room;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.util.Collection;
 import java.util.Map;
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Lobby {
 
     private final Map<String, Player> onlinePlayers = new ConcurrentHashMap<>();
-    private final Map< String , Room > rooms = new ConcurrentHashMap<>();
+    private final Map<String , Room > rooms = new ConcurrentHashMap<>();
 
     public void addPlayer(Player player) {
         onlinePlayers.put(player.getId(), player);
@@ -68,4 +69,14 @@ public class Lobby {
     public void removeRoom(String roomId) {
         rooms.remove(roomId);
     }
+
+    public Room getRoomByPlayerId (String playerId) {
+
+        return rooms.values().stream()
+                .filter(room -> room.getPlayers()
+                        .stream().anyMatch(p -> p.getId().equals(playerId)))
+                .findFirst()
+                .orElse(null);
+    }
+
 }

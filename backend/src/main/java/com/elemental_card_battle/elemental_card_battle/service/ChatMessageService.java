@@ -36,9 +36,10 @@ public class ChatMessageService {
                 .senderId(chatMessageReqDto.getSenderId())
                 .build();
 
+        room.touch();
+
         simpMessagingTemplate.convertAndSend("/topic/room/" + chatMessageReqDto.getRoomId() + "/messages", dto);
 
         return dto;
     }
-
 }

@@ -29,7 +29,7 @@ public class GameSessionService  {
         if (gameSession.isTimerActive() == false) {
             gameSession.setTimerActive(true);
             gameSessionBroadcaster.broadcastStartCountdown(gameSession);
-            turnTimer.startTimer(gameSession,15,() -> playRandomCard(gameSession.getId()));
+            turnTimer.startTimer(gameSession,7,() -> playRandomCard(gameSession.getId()));
         }
 
 

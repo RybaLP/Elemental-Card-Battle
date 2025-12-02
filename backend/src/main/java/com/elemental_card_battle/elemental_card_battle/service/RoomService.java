@@ -42,6 +42,7 @@ public class RoomService {
         return rooms.stream().map(roomMapper :: roomToRoomDto).toList();
     }
 
+
     public RoomDto getRoomById (String roomId) {
         Room room = lobby.getRoom(roomId);
         if (room == null) {
@@ -119,5 +120,17 @@ public class RoomService {
 
         broadcastRooms();
         broadcastRoom(leaveRoomDto.getRoomId());
+    }
+
+    public void leaveRoomAndDelete(LeaveRoomDto leaveRoomDto) {
+        Room room = lobby.getRoom(leaveRoomDto.getRoomId());
+
+        if (room == null) {
+            return;
+        }
+
+        lobby.removeRoom(room.getId());
+
+        simpMessagingTemplate.convertAndSend("/topic/rooms", lobby.getRooms());
     }
 }

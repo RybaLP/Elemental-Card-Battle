@@ -18,11 +18,17 @@ public class Room {
     private boolean isPrivate;
     private boolean isFull;
 
+    private static final long ROOM_TIMEOUT = 120_000;
+
     @Builder.Default
     private List<Player> players = new ArrayList<>();
 
     @Builder.Default
     private List<ChatMessage> messages = new ArrayList<>();
+
+    @Builder.Default
+    private long lastActivity = System.currentTimeMillis();
+
 
     public void addPlayer (Player player) {
         if (!isFull) {
@@ -34,5 +40,13 @@ public class Room {
     public void removePlayer (Player player) {
         players.remove(player);
         isFull = players.size() == 2;
+    }
+
+    public void touch() {
+        this.lastActivity = System.currentTimeMillis();
+    }
+
+    public boolean isInactive() {
+        return System.currentTimeMillis() - lastActivity > ROOM_TIMEOUT;
     }
 }

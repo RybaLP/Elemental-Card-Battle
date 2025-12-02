@@ -50,4 +50,10 @@ public class RoomController {
         roomService.leaveRoom(leaveRoomDto);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/leave-and-delete")
+    public ResponseEntity<Void> leaveRoomAndDelete (@RequestBody LeaveRoomDto leaveRoomDto) {
+        roomService.leaveRoomAndDelete(leaveRoomDto);
+        return ResponseEntity.noContent().build();
+    }
 }
