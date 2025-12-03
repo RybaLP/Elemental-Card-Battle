@@ -3,18 +3,24 @@
 import { useGameSessionStore } from "@/store/useGameSessionStore";
 import { useRouter } from "next/navigation";
 import { useCurrentRoomStore } from "@/store/useCurrentRoomStore";
+import { leaveRoomAndDelete } from "@/api/room";
 
 const GameOver = () => {
   const isGameOver = useGameSessionStore((state) => state.isGameOver);
   const message = useGameSessionStore((state) => state.gameWinnerMessage);
   const currentRoom = useCurrentRoomStore((state) => state.currentRoom);
-
+  const setCurrentRoom = useCurrentRoomStore(state => state.setCurrentRoom);
+  const resetTurn = useGameSessionStore(state => state.resetTurn);
   const router = useRouter();
+  const myPlayer = useGameSessionStore(state => state.myPlayer);
 
-  const handleReturnToLobby = () => {
+  const handleReturnToLobby = async () => {
     if (!currentRoom) return;
-
-    router.push(`/play/lobby/${currentRoom.id}`);
+    if (!myPlayer) return;
+    setCurrentRoom(null);
+    resetTurn(myPlayer.currentHand);
+    await leaveRoomAndDelete(myPlayer.playerId, currentRoom.id);
+    router.push(`/play/lobby`);
   };
 
   if (!isGameOver) return null;
@@ -35,7 +41,7 @@ const GameOver = () => {
           onClick={handleReturnToLobby}
           className="px-10 py-3 text-xl font-bold from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-xl shadow-lg transition-all transform hover:scale-105"
         >
-          Return to Lobby
+          Leave
         </button>
       </div>
     </div>

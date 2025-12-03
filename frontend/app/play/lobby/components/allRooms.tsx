@@ -39,10 +39,10 @@ const RoomsList = ({allRooms} : Props) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 to-black p-6">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent mb-4">
+          <h2 className="text-4xl font-bold bg-linear-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent mb-4">
             Rooms list
           </h2>
         </div>
@@ -96,7 +96,7 @@ const RoomsList = ({allRooms} : Props) => {
                     ) : (
                       <button
                         onClick={() => handleJoinRoom(room.id)}
-                        className="w-full bg-gradient-to-r from-purple-600 to-purple-700 
+                        className="w-full bg-linear-to-r from-purple-600 to-purple-700 
                                  hover:from-purple-700 hover:to-purple-800 text-white 
                                  font-semibold py-3 px-4 rounded-lg transition-all duration-200 
                                  transform hover:scale-[1.02] active:scale-[0.98] 

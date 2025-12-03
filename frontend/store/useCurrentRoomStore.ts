@@ -3,7 +3,7 @@ import { Room } from "@/types/room";
 
 interface RoomStore {
     currentRoom: Room | null;
-    setCurrentRoom: (room: Room) => void;
+    setCurrentRoom: (room: Room | null) => void;
 }
 
 export const useCurrentRoomStore = create<RoomStore>((set) => ({

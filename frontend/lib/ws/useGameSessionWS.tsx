@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { Stomp } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { useGameSessionStore } from "@/store/useGameSessionStore";
+import { playCardPick } from "../../helper/cardAudioManager";
+import { useAudioStore } from "@/store/useAudioStore";
 
 
 export const useGameSessionWS = (sessionId : string, playerId : string) => {
@@ -42,15 +44,19 @@ export const useGameSessionWS = (sessionId : string, playerId : string) => {
                         setEnemyCard(body.card);
                     }
                 }
-
             }),
+
             client.subscribe(`/topic/game/${sessionId}/winner`, (message) => {
                 const body = JSON.parse(message.body);
                 const store = useGameSessionStore.getState();
+                const audioStore = useAudioStore.getState();
 
                 store.setIsRevealing(true);
 
                 setTimeout (() => {
+
+                    audioStore.setPlayResolveRound(true);
+
                     const myRounds = body.p1Id === playerId ? body.p1Rounds : body.p2Rounds;    
                     const enemyRounds = body.p1Id === playerId ? body.p2Rounds : body.p1Rounds; 
 
@@ -77,17 +83,21 @@ export const useGameSessionWS = (sessionId : string, playerId : string) => {
             client.subscribe(`/topic/game/${sessionId}/randomCard` , (message) => {
                 const body = JSON.parse(message.body);
                 const store = useGameSessionStore.getState();
+                const audioStore = useAudioStore.getState();
 
                 if (body.event === "randomCard") {
                     if (store.myPlayer?.playerId === body.playerId){
                         store.setSelectedCard(body.card);
+                        playCardPick();
+
                     } else {
+                        playCardPick();
+                        audioStore.setPlayEnemySelectedCard(true);
                         store.setEnemyCard(body.card);
                         store.setIsRevealing(true);
                     }
                 }
             }),
-
 
             client.subscribe(`/topic/game/${sessionId}/countdown/start`, (message) => {
                 const body = JSON.parse(message.body);

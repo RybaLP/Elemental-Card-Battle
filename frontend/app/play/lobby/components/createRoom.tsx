@@ -47,7 +47,7 @@ const CreateRoom = () => {
         <>
             <button
                 onClick={handleOpen}
-                className="fixed bottom-8 right-8 z-10 bg-gradient-to-r from-purple-600 to-purple-700 
+                className="fixed bottom-8 right-8 z-10 bg-linear-to-r from-purple-600 to-purple-700 
                          hover:from-purple-700 hover:to-purple-800 text-white font-bold p-4 rounded-full 
                          shadow-2xl transition-all duration-300 transform hover:scale-110 
                          focus:outline-none focus:ring-4 focus:ring-purple-500/50 group"
@@ -67,7 +67,7 @@ const CreateRoom = () => {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="p-6 border-b border-gray-700">
-                            <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+                            <h2 className="text-2xl font-bold bg-linear-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
                                 Create New Lobby
                             </h2>
                         </div>
@@ -108,7 +108,7 @@ const CreateRoom = () => {
                                 <button
                                     type="submit"
                                     disabled={!name.trim() || isLoading}
-                                    className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 
+                                    className="flex-1 bg-linear-to-r from-purple-600 to-purple-700 
                                              hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 
                                              disabled:to-gray-700 disabled:cursor-not-allowed text-white 
                                              font-semibold py-3 px-4 rounded-lg transition-all duration-200 

@@ -72,3 +72,14 @@ export const leaveRoom = async (playerId : string , roomId : string) : Promise<v
         throw new Error(`Could not leave room!`);
     }
 }
+
+export const leaveRoomAndDelete = async (playerId : string, roomId : string) : Promise<void> => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/rooms/leave-and-delete`, {
+        method : "DELETE",
+        headers : {"Content-Type" : "application/json"},
+        body : JSON.stringify({playerId : playerId, roomId : roomId})
+    })
+        if (!res.ok) {
+        throw new Error(`Could not leave room!`);
+    }
+}

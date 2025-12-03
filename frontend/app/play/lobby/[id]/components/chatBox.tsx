@@ -51,7 +51,7 @@ const ChatBox = () => {
   };
   return (
     <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col">
-      <div className="px-6 py-4 border-b border-gray-700 bg-gray-800 flex-shrink-0">
+      <div className="px-6 py-4 border-b border-gray-700 bg-gray-800 shrink-0">
         <div className="flex items-center justify-between">
           <h3 className="text-white font-bold text-xl">ROOM CHAT</h3>
           <div className="flex items-center gap-2">
@@ -101,7 +101,7 @@ const ChatBox = () => {
                       </span>
                     </div>
 
-                    <div className="text-sm leading-relaxed break-words">
+                    <div className="text-sm leading-relaxed wrap-break-word">
                       {message.message}
                     </div>
                   </div>
@@ -112,7 +112,7 @@ const ChatBox = () => {
         )}
         <div ref={messagesEndRef} />
       </div>
-      <div className="p-4 border-t border-gray-700 bg-gray-800 flex-shrink-0">
+      <div className="p-4 border-t border-gray-700 bg-gray-800 shrink-0">
         <div className="flex gap-2">
           <input
             ref={inputRef}
@@ -133,7 +133,7 @@ const ChatBox = () => {
             disabled={!currentMessage.trim()}
             className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600
                      disabled:cursor-not-allowed text-white font-semibold rounded-lg
-                     transition-all duration-200 min-w-[80px]"
+                     transition-all duration-200 min-w-20"
           >
             Send
           </button>

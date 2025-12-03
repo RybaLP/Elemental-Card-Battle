@@ -28,7 +28,7 @@ const RoomLobby = () => {
 
   if (!currentRoom) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-gray-900 to-black flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-400 text-xl">Loading room...</p>
@@ -49,10 +49,10 @@ const RoomLobby = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 to-black p-6">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold bg-linear-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent mb-2">
             {currentRoom.name}
           </h1>
           <p className="text-gray-400">ID: {currentRoom.id}</p>

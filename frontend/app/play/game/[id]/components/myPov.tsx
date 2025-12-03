@@ -7,22 +7,26 @@ import { useGameSessionStore } from "@/store/useGameSessionStore";
 interface Props {
     cardsInHand: Card[];
     sessionId : string,
-    nickname : string
 }
 
-const MyPov = ({ cardsInHand , sessionId, nickname}: Props) => {
+const MyPov = ({ cardsInHand , sessionId}: Props) => {
 
     const myPlayer = useGameSessionStore(state => state.myPlayer);
     const setSelectedCard = useGameSessionStore(state => state.setSelectedCard);
     const selectedCard = useGameSessionStore(state => state.selectedCard);
     const setHoveredCard = useGameSessionStore(state => state.setHoveredCard);
-    const hoveredCard = useGameSessionStore(state => state.hoveredCard);
 
     const handleSelectCard = async (card: Card) => {
         if (selectedCard != null) return;
         setSelectedCard(card);
         if (!myPlayer) return;
+
+        const audio = new Audio("/audio/select-card-sound.mp3");
+        audio.volume = 0.5; 
+        audio.play();
+
         await selectCard(sessionId,card.instanceId,myPlayer.playerId); 
+
     }
 
     const handleSetHoveredCard = (instanceId : string) => {
@@ -62,7 +66,7 @@ const MyPov = ({ cardsInHand , sessionId, nickname}: Props) => {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex flex-col items-center justify-center p-4">
+                                    <div className="w-full h-full bg-linear-to-br from-gray-700 to-gray-800 flex flex-col items-center justify-center p-4">
                                         <div className="text-4xl mb-3">🃏</div>
                                         <span className="text-white text-center text-sm font-medium">{card.name}</span>
                                     </div>

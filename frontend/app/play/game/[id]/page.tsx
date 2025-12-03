@@ -12,6 +12,9 @@ import { useGameSessionWS } from "@/lib/ws/useGameSessionWS";
 import WonRounds from "./components/wonRounds";
 import RoundTimer from "./components/roundTimer";
 import GameOver from "./components/gameOver";
+import AudioPlayer from "./components/audioPlayer";
+import PlayResolveRound from "@/helper/playResolveRound";
+import PlayEnemySelectedCard from "@/helper/playEnemySelectedCard";
 
 const Page = () => {
   const session = useGameSessionStore((state) => state.session);
@@ -36,10 +39,15 @@ const Page = () => {
 
   
   return (
-    <div className="relative w-full h-screen bg-gradient-to-b from-gray-900 via-blue-950 to-gray-900 overflow-hidden">
+    
+    <div className="relative w-full h-screen bg-linear-to-b from-gray-900 via-blue-950 to-gray-900 overflow-hidden min-w-4xl">
       
       <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
       
+      {/* it is an invisible component - plays sound whenever state turns to true */}
+      <PlayResolveRound/>
+      <PlayEnemySelectedCard/>
+
       {isGameOver && <GameOver />}
 
       {showTimer && (
@@ -47,6 +55,8 @@ const Page = () => {
           <RoundTimer />
         </div>
       )}
+      
+      <AudioPlayer/>
 
       <div className="absolute top-4 left-0 right-0 flex justify-between px-8 z-10">
         <div className="flex flex-col items-start">
@@ -66,7 +76,6 @@ const Page = () => {
           <MyPov
             cardsInHand={myPlayer.currentHand}
             sessionId={session.id}
-            nickname={player.nickname}
           />
         </div>
 
@@ -79,7 +88,6 @@ const Page = () => {
         </div>
 
       </div>
-
     </div>
   );
 };
