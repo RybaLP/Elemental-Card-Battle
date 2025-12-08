@@ -1,17 +1,26 @@
-<img src="docs/screenshots/game-logo.png" alt="Game Logo" width="300"/>
-Multiplayer elemental card game inspired by Club Penguin’s **Card Jitsu**.
+# Elemental Card Battle
 
----
+<div align="center">
+  <img src="docs/screenshots/game-logo.png" alt="Game Logo" width="300"/>
+  
+  ### Multiplayer elemental card game inspired by Club Penguin's Card Jitsu
+  
+  [![Live Demo](https://img.shields.io/badge/🎮_Play_Now-Live_Demo-success?style=for-the-badge)](https://elemental-card-battle-ui.onrender.com)
+  
+  >**Note:** The application is hosted on Render's free tier, so initial loading may take up to 30 seconds as the server spins up from sleep mode.
+</div>
 
 ## Overview
 
-**Elemental Card Battle** is a multiplayer card game for two players. The project was inspired by the classic **Card Jitsu** from Club Penguin — a game I greatly enjoyed but which became unavailable after the servers were shut down.
+**Elemental Card Battle** is a real-time multiplayer card game for two players. Inspired by the beloved **Card Jitsu** from Club Penguin — a game I deeply enjoyed but which became inaccessible after the servers shut down — this project brings back the nostalgic gameplay with a fantasy twist.
 
-This project is a simplified reinterpretation that preserves the core mechanics of Card Jitsu while adapting them to a fantasy setting. The game features elemental kings, ninjas, dragons, and other mythical creatures.
+This is a reimagined version that preserves the core rock-paper-scissors-style mechanics while introducing a magical world of elemental kings, ninjas, dragons, and other mythical creatures.
 
 *Loosely inspired by [Card Jitsu](https://clubpenguin.fandom.com/wiki/Card-Jitsu) from Club Penguin.*
 
-<img src="docs/screenshots/elemental-gameplay.PNG" alt="Gameplay" width="600"/>
+<div align="center">
+  <img src="docs/screenshots/elemental-gameplay.PNG" alt="Gameplay" width="700"/>
+</div>
 
 ---
 
@@ -24,6 +33,7 @@ This project is a simplified reinterpretation that preserves the core mechanics 
 - Zustand
 - Framer Motion
 - Three.js
+- STOMP + SockJS
 
 ### Backend
 - Spring Boot (Java)
@@ -43,6 +53,16 @@ All card illustrations were generated using **Google Gemini** with consistent pr
 
 ---
 
+## 📁 Project Structure
+```
+elemental-card-battle/
+├── frontend/          # Next.js frontend application
+├── backend/           # Spring Boot backend application
+└─── docs/              # Documentation and screenshots
+```
+
+---
+
 ## Current Features
 
 - Create & join rooms
@@ -54,3 +74,6 @@ All card illustrations were generated using **Google Gemini** with consistent pr
 
 ---
 
+<div align="center">
+  ⭐ Star this repo if you enjoyed the game!
+</div>
