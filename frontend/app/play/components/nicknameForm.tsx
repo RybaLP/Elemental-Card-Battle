@@ -30,10 +30,10 @@ export const NicknameForm = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 to-black flex items-center justify-center p-4">
       <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 w-full max-w-md border border-purple-500/20">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl font-bold bg-linear-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent mb-2">
             Enter your nickname
           </h1>
           <p className="text-gray-400 text-sm">
@@ -64,7 +64,7 @@ export const NicknameForm = () => {
           <button 
             type="submit"
             disabled={!nickname.trim()}
-            className="w-full bg-gradient-to-r from-purple-600 to-purple-700 
+            className="w-full bg-linear-to-r from-purple-600 to-purple-700 
                      hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 
                      disabled:to-gray-700 disabled:cursor-not-allowed text-white 
                      font-semibold py-3 px-4 rounded-lg transition-all duration-200 
