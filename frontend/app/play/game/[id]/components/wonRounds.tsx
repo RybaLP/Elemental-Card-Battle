@@ -21,10 +21,13 @@ const WonRounds = ({ wonRounds }: Props) => {
   };
 
   const order = ["FIRE", "WATER", "ICE"] as const;
+  console.log("WATER IMAGES:", groups.WATER.map(r => r.imageUrl));
 
   return (
+    
     <div className="flex items-end gap-2"> 
       {order.map(type => (
+        
         groups[type].length > 0 && (
           
           <div key={type} className="flex flex-col items-center">

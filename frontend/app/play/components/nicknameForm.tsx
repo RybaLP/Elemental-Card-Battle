@@ -50,7 +50,7 @@ export const NicknameForm = () => {
               id="nickname"
               type="text"
               name="nickname"
-              placeholder="Wprowadź swój nick..."
+              placeholder="Enter your nickname"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg 
@@ -71,7 +71,7 @@ export const NicknameForm = () => {
                      transform hover:scale-[1.02] active:scale-[0.98] 
                      focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800"
           >
-            {nickname.trim() ? `Graj jako ${nickname}` : 'Wprowadź nick'}
+            {nickname.trim() ? `Play as ${nickname}` : 'Enter your nickname'}
           </button>
         </form>
       </div>
