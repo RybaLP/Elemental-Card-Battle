@@ -205,22 +205,48 @@ public class GameSessionService  {
 
 
     private boolean hasPlayerWon(PlayerState playerState) {
+
         List<WonRound> rounds = playerState.getWonRounds();
 
-        Map<String, Integer> colorCounts = new HashMap<>();
+        Map<String, Integer> fireCounts = new HashMap<>();
+        Map<String, Integer> iceCounts = new HashMap<>();
+        Map<String, Integer> waterCounts = new HashMap<>();
+
+
 
         for (WonRound round : rounds) {
+
             String color = round.getColor();
-            colorCounts.put(color, colorCounts.getOrDefault(color, 0) + 1);
+            String elementalType = round.getElementalType();
+
+            if (elementalType.equals("ICE")) {
+                iceCounts.put(color, iceCounts.getOrDefault(color, 0) + 1);
+            }
+
+            if (elementalType.equals("FIRE")) {
+                fireCounts.put(color, fireCounts.getOrDefault(color, 0) + 1);
+            }
+
+            if (elementalType.equals("WATER")) {
+                waterCounts.put(color, waterCounts.getOrDefault(color, 0) + 1);
+            }
+
         }
 
-        for (int count : colorCounts.values()) {
-            if (count >= 3) {
+// Win condition : Player ollected the same color from the same elemental type
+
+        if (fireCounts.containsValue(3) || waterCounts.containsValue(3) || iceCounts.containsValue(3)) {
+            return true;
+        }
+
+// Win condition: Player collected the same color from all three elemental types
+
+        for (String color : fireCounts.keySet()) {
+            if (iceCounts.containsKey(color) && waterCounts.containsKey(color)) {
                 return true;
             }
         }
 
         return false;
     }
-
 }
