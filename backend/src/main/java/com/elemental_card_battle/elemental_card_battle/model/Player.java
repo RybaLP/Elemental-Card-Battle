@@ -10,4 +10,5 @@ import lombok.Data;
 public class Player {
     private String id;
     private String nickname;
+    private boolean isBot;
 }

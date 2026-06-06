@@ -1,4 +1,4 @@
-package com.elemental_card_battle.elemental_card_battle.controler;
+package com.elemental_card_battle.elemental_card_battle.controller;
 
 import com.elemental_card_battle.elemental_card_battle.dto.room.*;
 import com.elemental_card_battle.elemental_card_battle.service.RoomService;
@@ -42,6 +42,18 @@ public class RoomController {
     @PostMapping("/join-public")
     public ResponseEntity<RoomDto> joinPublicRoom (@RequestBody JoinRoomDto joinRoomDto) {
         RoomDto roomDto = roomService.joinPublicRoom(joinRoomDto);
+        return ResponseEntity.ok(roomDto);
+    }
+
+    @PostMapping("/add-bot")
+    public ResponseEntity<RoomDto> addBot (@RequestBody BotRequestDto botRequestDto) {
+        RoomDto roomDto = roomService.addBotToRoom(botRequestDto);
+        return ResponseEntity.ok(roomDto);
+    }
+
+    @PostMapping("/kick-bot")
+    public ResponseEntity<RoomDto> removeBot (@RequestBody BotRequestDto botRequestDto) {
+        RoomDto roomDto = roomService.removeBot(botRequestDto);
         return ResponseEntity.ok(roomDto);
     }
 

@@ -1,4 +1,4 @@
-package com.elemental_card_battle.elemental_card_battle.controler;
+package com.elemental_card_battle.elemental_card_battle.controller;
 
 import com.elemental_card_battle.elemental_card_battle.dto.player.PlayerDto;
 import com.elemental_card_battle.elemental_card_battle.dto.player.PlayerNicknameDto;
@@ -18,7 +18,7 @@ public class PlayerController {
 
     @PostMapping
     public ResponseEntity<PlayerDto> createPlayer (@RequestBody PlayerNicknameDto playerNicknameDto) {
-        PlayerDto player = playerService.createPlayer(playerNicknameDto);
+        PlayerDto player = playerService.createPlayer(playerNicknameDto.nickname());
         return ResponseEntity.ok(player);
     }
 }

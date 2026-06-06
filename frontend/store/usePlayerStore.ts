@@ -9,7 +9,8 @@ interface PlayerStore {
 export const usePlayerStore = create<PlayerStore>((set) => ({
     player : {
         nickname : "",
-        id : ""
+        id : "",
+        isBot : false
     },
     setPlayer : (player) => set({player})    
 }));

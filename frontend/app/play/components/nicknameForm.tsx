@@ -20,7 +20,7 @@ export const NicknameForm = () => {
       const response = await createPlayer(nickname);
 
       if (response.nickname && response.id) {
-        setPlayer({id: response.id, nickname: response.nickname});
+        setPlayer({id: response.id, nickname: response.nickname, isBot: false});
         router.push("/play/lobby");
       }
 

@@ -1,4 +1,4 @@
-package com.elemental_card_battle.elemental_card_battle.controler;
+package com.elemental_card_battle.elemental_card_battle.controller;
 
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardPlayDto;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.PlayRandomCardDto;
@@ -31,7 +31,7 @@ public class GameSessionController {
 
     @PostMapping("/randomCard")
     public ResponseEntity<Void> playRandomCard (@RequestBody PlayRandomCardDto playRandomCardDto){
-        gameSessionService.playRandomCard(playRandomCardDto.getGameSessionId());
+        gameSessionService.playRandomCard(playRandomCardDto);
         return ResponseEntity.noContent().build();
     }
 }

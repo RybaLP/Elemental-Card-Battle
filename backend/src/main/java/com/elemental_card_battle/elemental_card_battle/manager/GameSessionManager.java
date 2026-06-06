@@ -5,7 +5,6 @@ import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardPlayD
 import com.elemental_card_battle.elemental_card_battle.model.*;
 import com.elemental_card_battle.elemental_card_battle.service.CardService;
 import com.elemental_card_battle.elemental_card_battle.util.GameSessionBroadcaster;
-import com.elemental_card_battle.elemental_card_battle.util.TurnTimer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -61,17 +60,17 @@ public class GameSessionManager {
 
     public boolean playerPlayCard (CardPlayDto cardPlayDto) {
 
-        GameSession gameSession = getSessionById(cardPlayDto.getSessionId());
+        GameSession gameSession = getSessionById(cardPlayDto.sessionId());
         if (gameSession == null) return false;
 
         PlayerState playerState =
-                gameSession.getPlayer1().getPlayerId().equals(cardPlayDto.getPlayerId())
+                gameSession.getPlayer1().getPlayerId().equals(cardPlayDto.playerId())
                         ? gameSession.getPlayer1()
                         : gameSession.getPlayer2();
 
 
         CardInstance cardInstance = playerState.getCurrentHand().stream()
-                .filter(card -> card.getInstanceId().equals(cardPlayDto.getInstanceId()))
+                .filter(card -> card.instanceId().equals(cardPlayDto.instanceId()))
                         .findFirst()
                             .orElseThrow(() -> new IllegalStateException("Could not find card"));
 
@@ -83,7 +82,7 @@ public class GameSessionManager {
         boolean bothPlayed =
                 gameSession.getPlayer1().isHasPlayedThisTurn() && gameSession.getPlayer2().isHasPlayedThisTurn();
 
-        gameSessionBroadcaster.broadcastSelectCard(gameSession.getId(), cardPlayDto.getPlayerId(), cardInstance);
+        gameSessionBroadcaster.broadcastSelectCard(gameSession.getId(), cardPlayDto.playerId(), cardInstance);
 
         return bothPlayed;
     }

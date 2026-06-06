@@ -2,6 +2,7 @@ package com.elemental_card_battle.elemental_card_battle.service;
 
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardInstance;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardPlayDto;
+import com.elemental_card_battle.elemental_card_battle.dto.gamesession.PlayRandomCardDto;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.RoundResultDto;
 import com.elemental_card_battle.elemental_card_battle.manager.GameSessionManager;
 import com.elemental_card_battle.elemental_card_battle.model.*;
@@ -24,12 +25,12 @@ public class GameSessionService  {
 
     public void playPlayerCard (CardPlayDto cardPlayDto) {
 
-        GameSession gameSession = gameSessionManager.getSessionById(cardPlayDto.getSessionId());
+        GameSession gameSession = gameSessionManager.getSessionById(cardPlayDto.sessionId());
 
-        if (gameSession.isTimerActive() == false) {
+        if (!gameSession.isTimerActive()) {
             gameSession.setTimerActive(true);
             gameSessionBroadcaster.broadcastStartCountdown(gameSession);
-            turnTimer.startTimer(gameSession,7,() -> playRandomCard(gameSession.getId()));
+            turnTimer.startTimer(gameSession,7,() -> playRandomCard(new PlayRandomCardDto(gameSession.getId())));
         }
 
 
@@ -42,9 +43,9 @@ public class GameSessionService  {
     }
 
 
-    public void playRandomCard (String gameSessionId) {
+    public void playRandomCard (PlayRandomCardDto playRandomCardDto) {
 
-        GameSession gameSession = gameSessionManager.getSessionById(gameSessionId);
+        GameSession gameSession = gameSessionManager.getSessionById(playRandomCardDto.gameSessionId());
 
         try {
 
@@ -104,11 +105,11 @@ public class GameSessionService  {
 //       case 1 : p1 gets point
         if (roundWinner.equals(p1.getPlayerId())) {
 
-            String imageUrl = roundIconService.getIconUrlByColorAndType(p1Card.getColor(), p1Card.getElementalType());
+            String imageUrl = roundIconService.getIconUrlByColorAndType(p1Card.color(), p1Card.elementalType());
 
             WonRound wonRound = WonRound.builder()
-                    .color(p1Card.getColor())
-                    .elementalType(p1Card.getElementalType())
+                    .color(p1Card.color())
+                    .elementalType(p1Card.elementalType())
                     .imageUrl(imageUrl)
                     .build();
 
@@ -118,11 +119,11 @@ public class GameSessionService  {
 //        case 2 : p2 gets point
         if (roundWinner.equals(p2.getPlayerId())) {
 
-            String imageUrl = roundIconService.getIconUrlByColorAndType(p2Card.getColor(), p2Card.getElementalType());
+            String imageUrl = roundIconService.getIconUrlByColorAndType(p2Card.color(), p2Card.elementalType());
 
             WonRound wonRound = WonRound.builder()
-                    .color(p2Card.getColor())
-                    .elementalType(p2Card.getElementalType())
+                    .color(p2Card.color())
+                    .elementalType(p2Card.elementalType())
                     .imageUrl(imageUrl)
                     .build();
 
@@ -143,18 +144,19 @@ public class GameSessionService  {
         p2.setSelectedCard(null);
         p2.setHasPlayedThisTurn(false);
 
-        RoundResultDto roundResultDto = RoundResultDto.builder()
-                        .winnerId(roundWinner)
-                                .p1WonRounds(p1.getWonRounds())
-                                        .p2WonRounds(p2.getWonRounds())
-                                            .p1Id(p1.getPlayerId())
-                                                .p2Id(p2.getPlayerId())
-                                                    .p1Cards(p1.getCurrentHand())
-                                                        .p2Cards(p2.getCurrentHand())
-                                                            .build();
+        RoundResultDto roundResultDto = new RoundResultDto(
+                roundWinner,
+                p1.getPlayerId(),
+                p2.getPlayerId(),
+                p1.getWonRounds(),
+                p2.getWonRounds(),
+                p1Card,
+                p2Card,
+                p1.getCurrentHand(),
+                p2.getCurrentHand()
+        );
 
         gameSessionBroadcaster.broadcastRoundWinner(gameSession.getId(), roundResultDto);
-
 
         String gameWinnerId  = checkIfSomeoneWon(gameSession);
 
@@ -170,13 +172,13 @@ public class GameSessionService  {
     private String getRoundWinner (CardInstance p1Card, CardInstance p2Card, String p1Id, String p2Id) {
 
         // if both players played card with the exact same elemental type (higher power wins)
-        if (p1Card.getElementalType().equals(p2Card.getElementalType())) {
+        if (p1Card.elementalType().equals(p2Card.elementalType())) {
 //            p1 win
-            if (p1Card.getPower() > p2Card.getPower()) {
+            if (p1Card.power() > p2Card.power()) {
                 return p1Id;
             }
 //            p2 win
-            if (p2Card.getPower() > p1Card.getPower()) {
+            if (p2Card.power() > p1Card.power()) {
                 return p2Id;
             }
 //            draw
@@ -184,9 +186,9 @@ public class GameSessionService  {
         }
 
 //        if elemental types are different...
-        if (p1Card.getElementalType().equals("FIRE") && p2Card.getElementalType().equals("ICE")
-                || p1Card.getElementalType().equals("WATER") && p2Card.getElementalType().equals("FIRE")
-                || p1Card.getElementalType().equals("ICE") && p2Card.getElementalType().equals("WATER")) {
+        if (p1Card.elementalType().equals("FIRE") && p2Card.elementalType().equals("ICE")
+                || p1Card.elementalType().equals("WATER") && p2Card.elementalType().equals("FIRE")
+                || p1Card.elementalType().equals("ICE") && p2Card.elementalType().equals("WATER")) {
             return p1Id;
         } else {
             return p2Id;
@@ -212,8 +214,6 @@ public class GameSessionService  {
         Map<String, Integer> iceCounts = new HashMap<>();
         Map<String, Integer> waterCounts = new HashMap<>();
 
-
-
         for (WonRound round : rounds) {
 
             String color = round.getColor();
@@ -232,15 +232,12 @@ public class GameSessionService  {
             }
 
         }
-
 // Win condition : Player ollected the same color from the same elemental type
-
         if (fireCounts.containsValue(3) || waterCounts.containsValue(3) || iceCounts.containsValue(3)) {
             return true;
         }
 
 // Win condition: Player collected the same color from all three elemental types
-
         for (String color : fireCounts.keySet()) {
             if (iceCounts.containsKey(color) && waterCounts.containsKey(color)) {
                 return true;
