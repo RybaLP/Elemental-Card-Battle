@@ -56,13 +56,13 @@ public class GameSessionBroadcaster {
     public void broadcastRoundWinner (String sessionId, RoundResultDto roundResultDto) {
         Map<String, Object> payload = Map.of(
                 "event" , "roundResult",
-                "winnerId" , roundResultDto.getWinnerId(),
-                "p1Id" , roundResultDto.getP1Id(),
-                "p2Id" , roundResultDto.getP2Id(),
-                "p1Rounds" , roundResultDto.getP1WonRounds(),
-                "p2Rounds" , roundResultDto.getP2WonRounds(),
-                "p1Cards" , roundResultDto.getP1Cards(),
-                "p2Cards", roundResultDto.getP2Cards()
+                "winnerId" , roundResultDto.winnerId(),
+                "p1Id" , roundResultDto.p1Id(),
+                "p2Id" , roundResultDto.p2Id(),
+                "p1Rounds" , roundResultDto.p1WonRounds(),
+                "p2Rounds" , roundResultDto.p2WonRounds(),
+                "p1Cards" , roundResultDto.p1Cards(),
+                "p2Cards", roundResultDto.p2Cards()
         );
 
         simpMessagingTemplate.convertAndSend("/topic/game/" + sessionId + "/winner", payload);

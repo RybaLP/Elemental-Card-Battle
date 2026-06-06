@@ -1,7 +1,6 @@
 package com.elemental_card_battle.elemental_card_battle.service;
 
 import com.elemental_card_battle.elemental_card_battle.dto.player.PlayerDto;
-import com.elemental_card_battle.elemental_card_battle.dto.player.PlayerNicknameDto;
 import com.elemental_card_battle.elemental_card_battle.manager.Lobby;
 import com.elemental_card_battle.elemental_card_battle.model.Player;
 import lombok.RequiredArgsConstructor;
@@ -15,19 +14,16 @@ public class PlayerService {
 
     private final Lobby lobby;
 
-    public PlayerDto createPlayer (PlayerNicknameDto playerNicknameDto) {
+    public PlayerDto createPlayer (String playerNickname) {
         String id = UUID.randomUUID().toString();
 
         Player player = Player.builder()
                 .id(id)
-                .nickname(playerNicknameDto.getNickname())
+                .nickname(playerNickname)
                 .build();
 
         lobby.addPlayer(player);
 
-        return PlayerDto.builder()
-                .nickname(player.getNickname())
-                .id(player.getId())
-                .build();
+        return new PlayerDto(player.getId(),playerNickname);
     }
 }

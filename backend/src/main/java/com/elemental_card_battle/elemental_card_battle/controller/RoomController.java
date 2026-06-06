@@ -1,4 +1,4 @@
-package com.elemental_card_battle.elemental_card_battle.controler;
+package com.elemental_card_battle.elemental_card_battle.controller;
 
 import com.elemental_card_battle.elemental_card_battle.dto.room.*;
 import com.elemental_card_battle.elemental_card_battle.service.RoomService;

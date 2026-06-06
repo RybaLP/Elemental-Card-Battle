@@ -17,29 +17,26 @@ public class ChatMessageService {
     private final Lobby lobby;
 
     public ChatMessageDto createMessage (ChatMessageReqDto chatMessageReqDto) {
-        Room room = lobby.getRoom(chatMessageReqDto.getRoomId());
+        Room room = lobby.getRoom(chatMessageReqDto.roomId());
         if (room == null) {
             throw new IllegalStateException("Room does not exist");
         }
 
         ChatMessage chatMessage = ChatMessage.builder()
-                .message(chatMessageReqDto.getMessage())
-                .senderNickname(chatMessageReqDto.getSenderNickname())
-                .senderId(chatMessageReqDto.getSenderId())
+                .message(chatMessageReqDto.message())
+                .senderNickname(chatMessageReqDto.senderNickname())
+                .senderId(chatMessageReqDto.senderId())
                 .build();
 
         room.getMessages().add(chatMessage);
 
-        ChatMessageDto dto = ChatMessageDto.builder()
-                .message(chatMessageReqDto.getMessage())
-                .senderNickname(chatMessageReqDto.getSenderNickname())
-                .senderId(chatMessageReqDto.getSenderId())
-                .build();
-
+        ChatMessageDto dto = new  ChatMessageDto(
+            chatMessageReqDto.message(),
+                chatMessageReqDto.senderNickname(),
+                chatMessageReqDto.senderId()
+        );
         room.touch();
-
-        simpMessagingTemplate.convertAndSend("/topic/room/" + chatMessageReqDto.getRoomId() + "/messages", dto);
-
+        simpMessagingTemplate.convertAndSend("/topic/room/" + chatMessageReqDto.roomId() + "/messages", dto);
         return dto;
     }
 }

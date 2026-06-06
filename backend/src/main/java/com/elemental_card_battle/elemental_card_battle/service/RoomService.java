@@ -53,8 +53,8 @@ public class RoomService {
 
     public RoomDto createPublicRoom (CreatePublicRoomDto createPublicRoomDto) {
 
-        String playerId = createPublicRoomDto.getPlayerId();
-        String name = createPublicRoomDto.getName();
+        String playerId = createPublicRoomDto.playerId();
+        String name = createPublicRoomDto.name();
 
         Player roomOwner = lobby.getPlayer(playerId);
         if (roomOwner == null) throw new RuntimeException("Player not found");
@@ -67,9 +67,9 @@ public class RoomService {
 
     public RoomDto createPrivateRoom (CreatePrivateRoomDto createPrivateRoomDto) {
 
-        String name = createPrivateRoomDto.getName();
-        String password = createPrivateRoomDto.getPassword();
-        String  playerId = createPrivateRoomDto.getPlayerId();
+        String name = createPrivateRoomDto.name();
+        String password = createPrivateRoomDto.password();
+        String  playerId = createPrivateRoomDto.playerId();
 
         Player roomOwner = lobby.getPlayer(playerId);
         if (roomOwner == null) throw new IllegalStateException("Player not found");
@@ -80,8 +80,8 @@ public class RoomService {
 
 
     public RoomDto joinPublicRoom (JoinRoomDto joinRoomDto){
-        Player player = lobby.getPlayer(joinRoomDto.getPlayerId());
-        Room room = lobby.getRoom(joinRoomDto.getRoomId());
+        Player player = lobby.getPlayer(joinRoomDto.playerId());
+        Room room = lobby.getRoom(joinRoomDto.roomId());
 
         if (player == null) {
             throw new IllegalStateException("Player does not exist");
@@ -94,7 +94,7 @@ public class RoomService {
         room.addPlayer(player);
 
         broadcastRooms();
-        broadcastRoom(joinRoomDto.getRoomId());
+        broadcastRoom(joinRoomDto.roomId());
 
         return roomMapper.roomToRoomDto(room);
     }
@@ -102,28 +102,28 @@ public class RoomService {
 
     public void leaveRoom(LeaveRoomDto leaveRoomDto) {
 
-        Player player = lobby.getPlayer(leaveRoomDto.getPlayerId());
-        Room room = lobby.getRoom(leaveRoomDto.getRoomId());
+        Player player = lobby.getPlayer(leaveRoomDto.playerId());
+        Room room = lobby.getRoom(leaveRoomDto.roomId());
 
         if (player == null || room == null)
             throw new RuntimeException("Player or Room not found");
 
         room.removePlayer(player);
 
-        if (room.getRoomOwner().getId().equals(leaveRoomDto.getPlayerId()) && !room.getPlayers().isEmpty()) {
-            room.setRoomOwner(room.getPlayers().get(0));
+        if (room.getRoomOwner().getId().equals(leaveRoomDto.playerId()) && !room.getPlayers().isEmpty()) {
+            room.setRoomOwner(room.getPlayers().getFirst());
         }
 
         if (room.getPlayers().isEmpty()) {
-            lobby.removeRoom(leaveRoomDto.getRoomId());
+            lobby.removeRoom(leaveRoomDto.roomId());
         }
 
         broadcastRooms();
-        broadcastRoom(leaveRoomDto.getRoomId());
+        broadcastRoom(leaveRoomDto.roomId());
     }
 
     public void leaveRoomAndDelete(LeaveRoomDto leaveRoomDto) {
-        Room room = lobby.getRoom(leaveRoomDto.getRoomId());
+        Room room = lobby.getRoom(leaveRoomDto.roomId());
 
         if (room == null) {
             return;
@@ -133,4 +133,5 @@ public class RoomService {
 
         simpMessagingTemplate.convertAndSend("/topic/rooms", lobby.getRooms());
     }
+
 }
