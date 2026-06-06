@@ -1,0 +1,35 @@
+services:
+  backend:
+    build: ./backend
+    container_name: ecb-backend
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M 
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - JAVA_OPTS=-Xmx256m -Xms128m
+      - FRONTEND_URL=http://localhost:3000
+    ports:
+      - "8080:8080"
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
+    container_name: ecb-frontend
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    restart: always
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
+      - BACKEND_URL=http://ecb-backend:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
