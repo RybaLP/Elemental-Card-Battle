@@ -48,6 +48,26 @@ export const leaveRoom = async (playerId: string, roomId: string): Promise<void>
     if (!res.ok) throw new Error(`Failed to leave room ${roomId} for player ${playerId}. Status: ${res.status}`);
 }
 
+export const addBot = async (roomId : string , ownerId : string ) : Promise <Room> => {
+    const res = await fetch(`${getBackendUrl()}/rooms/add-bot`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomId, ownerId })
+    });
+    if (!res.ok) throw new Error(`Failed to add bot to room ${roomId}. Status: ${res.status}`);
+    return res.json();
+}
+
+export const removeBot = async (roomId : string , ownerId : string ) : Promise<Room> => {
+    const res = await fetch(`${getBackendUrl()}/rooms/kick-bot`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomId, ownerId })
+    });
+    if (!res.ok) throw new Error(`Failed to remove bot from room ${roomId}. Status: ${res.status}`);
+    return res.json();
+}
+
 export const leaveRoomAndDelete = async (playerId: string, roomId: string): Promise<void> => {
     const res = await fetch(`${getBackendUrl()}/rooms/leave-and-delete`, {
         method: "DELETE",

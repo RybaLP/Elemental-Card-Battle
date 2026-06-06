@@ -4,7 +4,7 @@ import PlayerSlot from "./playerSlot";
 import { useCurrentRoomStore } from "@/store/useCurrentRoomStore";
 import { useRoomWS } from "@/lib/ws/useRoomWS";
 import ChatBox from "./chatBox";
-import { leaveRoom } from "@/api/room";
+import { leaveRoom, addBot, removeBot } from "@/api/room";
 import { usePlayerStore } from "@/store/usePlayerStore";
 import { useRouter } from "next/navigation";
 import { sendMessage } from "@/api/message";
@@ -19,12 +19,11 @@ const RoomLobby = () => {
   const router = useRouter();
 
   useEffect(() => {
-  const { session, isGameOver } = useGameSessionStore.getState();
-  if (!session || isGameOver) {
-    useGameSessionStore.getState().clearGameSession();
-  }
-}, []);
-
+    const { session, isGameOver } = useGameSessionStore.getState();
+    if (!session || isGameOver) {
+      useGameSessionStore.getState().clearGameSession();
+    }
+  }, []);
 
   if (!currentRoom) {
     return (
@@ -41,11 +40,29 @@ const RoomLobby = () => {
 
   const owner = currentRoom.players[0];
   const guest = currentRoom.players[1];
+  const isOwner = player.id === owner.id;
+  const guestIsBot = guest?.isBot === true;
 
   const handleLeaveRoom = async () => {
-      const message = await sendMessage(currentRoom.id, player.id, player.nickname, `Left the lobby`);
-      const res = await leaveRoom(player.id, currentRoom.id);
-      router.push("/play/lobby");
+    await sendMessage(currentRoom.id, player.id, player.nickname, `Left the lobby`);
+    await leaveRoom(player.id, currentRoom.id);
+    router.push("/play/lobby");
+  }
+
+  const handleAddBot = async () => {
+    try {
+      await addBot(currentRoom.id, player.id);
+    } catch (error) {
+      console.error("Failed to add bot:", error);
+    }
+  }
+
+  const handleKickBot = async () => {
+    try {
+      await removeBot(currentRoom.id, player.id);
+    } catch (error) {
+      console.error("Failed to kick bot:", error);
+    }
   }
 
   return (
@@ -71,7 +88,7 @@ const RoomLobby = () => {
             <div className="text-center mb-4">
               <span className="text-purple-400 font-semibold text-lg">Owner</span>
             </div>
-            {owner && <PlayerSlot player={owner}  />}
+            {owner && <PlayerSlot player={owner} />}
           </div>
 
           <div className="flex-1 max-w-2xl">
@@ -83,13 +100,33 @@ const RoomLobby = () => {
               <span className="text-blue-400 font-semibold text-lg">Guest</span>
             </div>
             {guest ? (
-              <PlayerSlot player={guest}/>
+              <div className="flex flex-col items-center gap-3">
+                <PlayerSlot player={guest} />
+                {isOwner && guestIsBot && (
+                  <button
+                    onClick={handleKickBot}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-colors"
+                  >
+                    Kick Bot
+                  </button>
+                )}
+              </div>
             ) : (
-              <div className="w-full h-[200px] bg-gray-800/50 border-2 border-dashed border-gray-600 rounded-2xl flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <div className="text-4xl mb-2">👤</div>
-                  <p>Waiting for player...</p>
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-full h-[200px] bg-gray-800/50 border-2 border-dashed border-gray-600 rounded-2xl flex items-center justify-center">
+                  <div className="text-center text-gray-500">
+                    <div className="text-4xl mb-2">👤</div>
+                    <p>Waiting for player...</p>
+                  </div>
                 </div>
+                {isOwner && (
+                  <button
+                    onClick={handleAddBot}
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors"
+                  >
+                    Add Bot
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -105,23 +142,23 @@ const RoomLobby = () => {
           </div>
         </div>
 
-        {player.id === owner.id && (
+        {isOwner && (
           <div className="mt-4">
-            <button className="px-4 py-2 bg-purple-600 text-white rounded-4xl"
-            onClick={async () => {
-              try {
-                const session = await startGame(currentRoom.id);
-                router.push(`/play/game/${session.id}`);
-              }
-              catch (error) {
-                throw new Error(error as any); 
-              }
-            }}>
+            <button
+              className="px-4 py-2 bg-purple-600 text-white rounded-4xl"
+              onClick={async () => {
+                try {
+                  const session = await startGame(currentRoom.id);
+                  router.push(`/play/game/${session.id}`);
+                } catch (error) {
+                  console.error("Failed to start game:", error);
+                }
+              }}
+            >
               Start Game
             </button>
           </div>
         )}
-  
       </div>
     </div>
   );
