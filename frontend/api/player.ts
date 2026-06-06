@@ -1,7 +1,8 @@
 import { Player } from "@/types/player";
+import { getBackendUrl } from "./getBackendUrl";
 
 export const createPlayer = async ( nickname : string ) : Promise<Player> => {
-    const res = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + `/players` , {
+    const res = await fetch(getBackendUrl() + `/players` , {
         method : "POST",
         headers : {"Content-Type" : "application/json"},
         body : JSON.stringify({nickname})
