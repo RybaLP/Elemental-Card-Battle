@@ -1,12 +1,7 @@
 package com.elemental_card_battle.elemental_card_battle.dto.gamesession;
-import lombok.Builder;
-import lombok.Data;
 
-
-@Data
-@Builder
-public class CardPlayDto {
-    private String sessionId;
-    private String playerId;
-    private String instanceId;
-}
+public record CardPlayDto(
+        String sessionId,
+        String playerId,
+        String instanceId
+) {}
