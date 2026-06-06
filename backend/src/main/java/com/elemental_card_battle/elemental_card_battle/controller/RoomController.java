@@ -45,6 +45,18 @@ public class RoomController {
         return ResponseEntity.ok(roomDto);
     }
 
+    @PostMapping("/add-bot")
+    public ResponseEntity<RoomDto> addBot (@RequestBody BotRequestDto botRequestDto) {
+        RoomDto roomDto = roomService.addBotToRoom(botRequestDto);
+        return ResponseEntity.ok(roomDto);
+    }
+
+    @PostMapping("/kick-bot")
+    public ResponseEntity<RoomDto> removeBot (@RequestBody BotRequestDto botRequestDto) {
+        RoomDto roomDto = roomService.removeBot(botRequestDto);
+        return ResponseEntity.ok(roomDto);
+    }
+
     @PostMapping("/leave")
     public ResponseEntity<Void> leaveRoom (@RequestBody LeaveRoomDto leaveRoomDto) {
         roomService.leaveRoom(leaveRoomDto);

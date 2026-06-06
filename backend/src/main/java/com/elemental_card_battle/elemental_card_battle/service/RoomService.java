@@ -10,6 +10,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class RoomService {
     private final Lobby lobby;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final RoomMapper roomMapper;
+    private  final BotService botService;
 
     private void broadcastRooms () {
         simpMessagingTemplate.convertAndSend(
@@ -99,6 +101,47 @@ public class RoomService {
         return roomMapper.roomToRoomDto(room);
     }
 
+//    bot section
+    public RoomDto addBotToRoom (BotRequestDto addBotRequest) {
+        Room room = lobby.getRoom(addBotRequest.roomId());
+        if (room == null) throw new RuntimeException("Room not found");
+
+        if (!room.getRoomOwner().getId().equals(addBotRequest.ownerId())) {
+            throw new RuntimeException("Only owner of room can add bots");
+        }
+
+        if (room.isFull()) throw new RuntimeException("Room is already full");
+
+        Player botPlayer = botService.generateBot();
+        lobby.addPlayer(botPlayer);
+        room.addPlayer(botPlayer);
+
+        broadcastRooms();
+        broadcastRoom(addBotRequest.roomId());
+
+        return roomMapper.roomToRoomDto(room);
+    }
+
+    public RoomDto removeBot (BotRequestDto botRequestDto) {
+        Room room = lobby.getRoom(botRequestDto.roomId());
+        if (room == null) {
+            throw new RuntimeException("Room already does not exist");
+        }
+
+        room.getPlayers().stream()
+                .filter(Player::isBot)
+                .findFirst()
+                .ifPresent(bot -> {
+                    room.removePlayer(bot);
+                    lobby.removePlayer(bot.getId());
+                });
+
+        broadcastRooms();
+        broadcastRoom(botRequestDto.roomId());
+
+        return roomMapper.roomToRoomDto(room);
+    }
+//
 
     public void leaveRoom(LeaveRoomDto leaveRoomDto) {
 

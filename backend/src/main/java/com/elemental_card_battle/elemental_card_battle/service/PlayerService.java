@@ -20,6 +20,7 @@ public class PlayerService {
         Player player = Player.builder()
                 .id(id)
                 .nickname(playerNickname)
+                .isBot(false)
                 .build();
 
         lobby.addPlayer(player);
