@@ -4,6 +4,7 @@ import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardInsta
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardPlayDto;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.PlayRandomCardDto;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.RoundResultDto;
+import com.elemental_card_battle.elemental_card_battle.exception.game.GameSessionNotFoundException;
 import com.elemental_card_battle.elemental_card_battle.manager.GameSessionManager;
 import com.elemental_card_battle.elemental_card_battle.model.*;
 import com.elemental_card_battle.elemental_card_battle.util.GameSessionBroadcaster;
@@ -26,6 +27,7 @@ public class GameSessionService  {
     public void playPlayerCard (CardPlayDto cardPlayDto) {
 
         GameSession gameSession = gameSessionManager.getSessionById(cardPlayDto.sessionId());
+        if (gameSession == null) throw new GameSessionNotFoundException(cardPlayDto.sessionId());
 
         if (!gameSession.isTimerActive()) {
             gameSession.setTimerActive(true);
@@ -47,8 +49,6 @@ public class GameSessionService  {
 
         GameSession gameSession = gameSessionManager.getSessionById(playRandomCardDto.gameSessionId());
 
-        try {
-
             PlayerState p1 = gameSession.getPlayer1();
             PlayerState p2 = gameSession.getPlayer2();
             Random random = new Random();
@@ -64,10 +64,6 @@ public class GameSessionService  {
             }
 
             resolveRound(gameSession);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
 //    generating random card from currenthand

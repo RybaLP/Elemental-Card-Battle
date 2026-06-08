@@ -2,6 +2,7 @@ package com.elemental_card_battle.elemental_card_battle.service;
 
 import com.elemental_card_battle.elemental_card_battle.dto.chatmessage.ChatMessageDto;
 import com.elemental_card_battle.elemental_card_battle.dto.chatmessage.ChatMessageReqDto;
+import com.elemental_card_battle.elemental_card_battle.exception.room.RoomNotFoundException;
 import com.elemental_card_battle.elemental_card_battle.manager.Lobby;
 import com.elemental_card_battle.elemental_card_battle.model.ChatMessage;
 import com.elemental_card_battle.elemental_card_battle.model.Room;
@@ -19,7 +20,7 @@ public class ChatMessageService {
     public ChatMessageDto createMessage (ChatMessageReqDto chatMessageReqDto) {
         Room room = lobby.getRoom(chatMessageReqDto.roomId());
         if (room == null) {
-            throw new IllegalStateException("Room does not exist");
+            throw new RoomNotFoundException(chatMessageReqDto.roomId());
         }
 
         ChatMessage chatMessage = ChatMessage.builder()

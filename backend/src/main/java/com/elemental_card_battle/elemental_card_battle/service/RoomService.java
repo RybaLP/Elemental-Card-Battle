@@ -1,6 +1,10 @@
 package com.elemental_card_battle.elemental_card_battle.service;
 
 import com.elemental_card_battle.elemental_card_battle.dto.room.*;
+import com.elemental_card_battle.elemental_card_battle.exception.player.PlayerNotFoundException;
+import com.elemental_card_battle.elemental_card_battle.exception.room.NotRoomOwnerException;
+import com.elemental_card_battle.elemental_card_battle.exception.room.RoomFullException;
+import com.elemental_card_battle.elemental_card_battle.exception.room.RoomNotFoundException;
 import com.elemental_card_battle.elemental_card_battle.manager.Lobby;
 import com.elemental_card_battle.elemental_card_battle.mapper.RoomMapper;
 import com.elemental_card_battle.elemental_card_battle.model.Player;
@@ -10,7 +14,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +51,7 @@ public class RoomService {
     public RoomDto getRoomById (String roomId) {
         Room room = lobby.getRoom(roomId);
         if (room == null) {
-            throw new IllegalStateException("Room does not exist");
+            throw new RoomNotFoundException(roomId);
         }
         return roomMapper.roomToRoomDto(room);
     }
@@ -59,11 +62,9 @@ public class RoomService {
         String name = createPublicRoomDto.name();
 
         Player roomOwner = lobby.getPlayer(playerId);
-        if (roomOwner == null) throw new RuntimeException("Player not found");
+        if (roomOwner == null) throw new PlayerNotFoundException(playerId);
         Room room = lobby.createPublicRoom(name, roomOwner);
-
         broadcastRooms();
-
         return roomMapper.roomToRoomDto(room);
     }
 
@@ -74,7 +75,7 @@ public class RoomService {
         String  playerId = createPrivateRoomDto.playerId();
 
         Player roomOwner = lobby.getPlayer(playerId);
-        if (roomOwner == null) throw new IllegalStateException("Player not found");
+        if (roomOwner == null) throw new PlayerNotFoundException(createPrivateRoomDto.playerId());
         Room room =  lobby.createPrivateRoom(name,roomOwner,password);
 
         return roomMapper.roomToRoomDto(room);
@@ -86,11 +87,11 @@ public class RoomService {
         Room room = lobby.getRoom(joinRoomDto.roomId());
 
         if (player == null) {
-            throw new IllegalStateException("Player does not exist");
+            throw new PlayerNotFoundException(joinRoomDto.playerId());
         }
 
         if (room == null) {
-            throw new IllegalStateException("Room does not exists");
+            throw new RoomNotFoundException(joinRoomDto.roomId());
         }
 
         room.addPlayer(player);
@@ -104,13 +105,13 @@ public class RoomService {
 //    bot section
     public RoomDto addBotToRoom (BotRequestDto addBotRequest) {
         Room room = lobby.getRoom(addBotRequest.roomId());
-        if (room == null) throw new RuntimeException("Room not found");
+        if (room == null) throw new RoomNotFoundException(addBotRequest.roomId());
 
         if (!room.getRoomOwner().getId().equals(addBotRequest.ownerId())) {
-            throw new RuntimeException("Only owner of room can add bots");
+            throw new NotRoomOwnerException();
         }
 
-        if (room.isFull()) throw new RuntimeException("Room is already full");
+        if (room.isFull()) throw new RoomFullException();
 
         Player botPlayer = botService.generateBot();
         lobby.addPlayer(botPlayer);
@@ -125,7 +126,7 @@ public class RoomService {
     public RoomDto removeBot (BotRequestDto botRequestDto) {
         Room room = lobby.getRoom(botRequestDto.roomId());
         if (room == null) {
-            throw new RuntimeException("Room already does not exist");
+            throw new RoomNotFoundException(botRequestDto.roomId());
         }
 
         room.getPlayers().stream()
@@ -148,8 +149,8 @@ public class RoomService {
         Player player = lobby.getPlayer(leaveRoomDto.playerId());
         Room room = lobby.getRoom(leaveRoomDto.roomId());
 
-        if (player == null || room == null)
-            throw new RuntimeException("Player or Room not found");
+        if (player == null) throw new PlayerNotFoundException(leaveRoomDto.playerId());
+        if (room == null) throw new RoomNotFoundException(leaveRoomDto.roomId());
 
         room.removePlayer(player);
 

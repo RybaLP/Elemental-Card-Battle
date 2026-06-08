@@ -1,6 +1,7 @@
 package com.elemental_card_battle.elemental_card_battle.service;
 
 import com.elemental_card_battle.elemental_card_battle.dto.player.PlayerDto;
+import com.elemental_card_battle.elemental_card_battle.exception.player.InvalidPlayerNicknameException;
 import com.elemental_card_battle.elemental_card_battle.manager.Lobby;
 import com.elemental_card_battle.elemental_card_battle.model.Player;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,10 @@ public class PlayerService {
     private final Lobby lobby;
 
     public PlayerDto createPlayer (String playerNickname) {
+
+        if (playerNickname == null || playerNickname.isBlank()) {
+            throw new InvalidPlayerNicknameException();
+        }
         String id = UUID.randomUUID().toString();
 
         Player player = Player.builder()
