@@ -1,36 +1,25 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Elemental Card Battle - Frontend
 
-## Getting Started
+## Overview
+Frontend application for the Elemental Card Battle game, built with **Next.js** and **TypeScript**. It provides a reactive UI for real-time card gameplay, synchronizing state with the backend via REST and WebSockets.
 
-First, run the development server:
+## Architecture Decisions
+*   **Next.js (App Router)**: Selected for native support of React Server Components and optimized routing capabilities.
+*   **TypeScript**: Enforced strictly to ensure type safety across complex game objects (e.g., `GameState`, `Card`, `PlayerAction`).
+*   **State Strategy**: Global state management to minimize unnecessary re-renders during high-frequency WebSocket updates.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Live Environment
+*   **Production Instance**: [https://ecbgame.bieda.it](https://ecbgame.bieda.it)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Data Flow
+*   **REST API**: Used for static metadata, user authentication, and non-real-time resource fetching.
+*   **WebSockets (STOMP)**: Primary channel for real-time game state synchronization. Key events managed: `GAME_STARTED`, `CARD_PLAYED`, `TURN_CHANGED`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Development
+1.  **Installation**: `npm install`
+2.  **Configuration**: Create `.env.local` based on `.env.local.example` and set `NEXT_PUBLIC_API_URL` to your backend endpoint.
+3.  **Local Development**: `npm run dev`
+4.  **Quality Assurance**: Run `npm run lint` to ensure code standard compliance before committing.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Key Engineering Challenges
+*   **State Consistency**: Maintaining synchronization between the client UI and the server game engine during network latency or reconnection events.

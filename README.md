@@ -1,79 +1,31 @@
 # Elemental Card Battle
 
-<div align="center">
-  <img src="docs/screenshots/game-logo.png" alt="Game Logo" width="300"/>
-  
-  ### Multiplayer elemental card game inspired by Club Penguin's Card Jitsu
-  
-  [![Live Demo](https://img.shields.io/badge/🎮_Play_Now-Live_Demo-success?style=for-the-badge)](https://elemental-card-battle-ui.onrender.com)
-  
-  >**Note:** The application is hosted on Render's free tier, so initial loading may take up to 30 seconds as the server spins up from sleep mode.
-</div>
+Multiplayer card game based on the core mechanics of Card Jitsu, featuring real-time WebSocket communication and a custom elemental-themed card system.
 
-## Overview
+## Project Overview
+The project is a real-time multiplayer application designed for two-player sessions. It implements a turn-based card system where game logic, state synchronization, and user interaction are handled via a robust backend-frontend integration.
 
-**Elemental Card Battle** is a real-time multiplayer card game for two players. Inspired by the beloved **Card Jitsu** from Club Penguin — a game I deeply enjoyed but which became inaccessible after the servers shut down — this project brings back the nostalgic gameplay with a fantasy twist.
+## Technical Architecture
+*   **Backend**: Java Spring Boot, utilizing STOMP and SockJS for WebSocket-based state management.
+*   **Frontend**: Next.js with TypeScript.
+*   **Communication**: REST API for metadata and authentication, WebSockets for real-time game state synchronization.
+*   **Persistence**: PostgreSQL.
 
-This is a reimagined version that preserves the core rock-paper-scissors-style mechanics while introducing a magical world of elemental kings, ninjas, dragons, and other mythical creatures.
+## Deployment
+The application is hosted on a production-grade VPS (Mikrus.pl).
+*   **Live Instance**: [https://ecbgame.bieda.it](https://ecbgame.bieda.it)
+*   **Backend Endpoint**: [https://apiecb.bieda.it](https://apiecb.bieda.it)
+*   **API Documentation**: [https://apiecb.bieda.it/swagger-ui.html](https://apiecb.bieda.it/swagger-ui.html)
 
-*Loosely inspired by [Card Jitsu](https://clubpenguin.fandom.com/wiki/Card-Jitsu) from Club Penguin.*
+## Repository Structure
+*   `/frontend`: Next.js client application.
+*   `/backend`: Spring Boot server application.
+*   `/docs`: Project documentation and architecture diagrams.
 
-<div align="center">
-  <img src="docs/screenshots/elemental-gameplay.PNG" alt="Gameplay" width="700"/>
-</div>
+## Engineering Features
+*   **Real-time Synchronization**: Full WebSocket implementation for lobby management and game flow.
+*   **Automated Maintenance**: Implemented server-side logic (`LobbyCleanupService`) to prune inactive or bot-populated sessions.
+*   **CI/CD**: Automated build and linting workflows via GitHub Actions.
 
----
-
-## Technologies
-
-### Frontend
-- Next.js 13 (App Router)
-- TypeScript
-- Tailwind CSS
-- Zustand
-- Framer Motion
-- Three.js
-- STOMP + SockJS
-
-### Backend
-- Spring Boot (Java)
-- STOMP + SockJS (WebSockets)
-- PostgreSQL
-
-### Others
-- **Figma** – UI/UX design
-- **Google Gemini** – AI-generated card graphics (consistent prompts)
----
-
-## UI / Graphics
-
-All card illustrations were generated using **Google Gemini** with consistent prompts to maintain a unified visual style.
-
-![Figma Assets](docs/screenshots/figma-assets.PNG)
-
----
-
-## 📁 Project Structure
-```
-elemental-card-battle/
-├── frontend/          # Next.js frontend application
-├── backend/           # Spring Boot backend application
-└─── docs/              # Documentation and screenshots
-```
-
----
-
-## Current Features
-
-- Create & join rooms
-- Real-time chat in lobby
-- Live notifications when players join or leave
-- Smooth, WebSocket-powered gameplay
-- Auto-cleaning of inactive rooms (ghost lobby prevention)
-- Responsive UI for desktop & mobile
-
----
-
-<div align="center">
-  ⭐ Star this repo if you enjoyed the game!
-</div>
+## Development Setup
+Each component contains its own `README.md` with instructions specific to its tech stack. For local environment setup, ensure you have Java 17+, Node.js 18+, and Docker installed.
