@@ -1,35 +1,43 @@
+version: '3.8'
+
 services:
+  nginx-proxy:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81"
+    volumes:
+      - ./nginx/data:/data
+      - ./nginx/letsencrypt:/etc/letsencrypt
+    networks:
+      - webnet
+
   backend:
     build: ./backend
+    image: elcardbattlebackend:latest  
     container_name: ecb-backend
     restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 512M 
+    networks:
+      - webnet
     environment:
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-      - JAVA_OPTS=-Xmx256m -Xms128m
-      - FRONTEND_URL=http://localhost:3000
-    ports:
-      - "8080:8080"
+      - FRONTEND_URL=https://ecbgame.bieda.it
+
   frontend:
-    build:
-      context: ./frontend
-      args:
-        - NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
+    build: ./frontend
+    image: elcardbattlefrontend:latest 
     container_name: ecb-frontend
-    deploy:
-      resources:
-        limits:
-          memory: 256M
     restart: always
+    networks:
+      - webnet
     environment:
-      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
-      - BACKEND_URL=http://ecb-backend:8080
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
+      - NEXT_PUBLIC_BACKEND_URL=https://apiecb.bieda.it
+
+networks:
+  webnet:
+    driver: bridge
