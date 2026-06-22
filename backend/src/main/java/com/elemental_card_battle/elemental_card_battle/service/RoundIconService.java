@@ -1,5 +1,6 @@
 package com.elemental_card_battle.elemental_card_battle.service;
 
+import com.elemental_card_battle.elemental_card_battle.card.ElementalType;
 import com.elemental_card_battle.elemental_card_battle.exception.card.CardNotFoundException;
 import com.elemental_card_battle.elemental_card_battle.model.RoundIcon;
 import com.elemental_card_battle.elemental_card_battle.repository.RoundIconRepository;
@@ -12,7 +13,7 @@ public class RoundIconService {
 
     private final RoundIconRepository roundIconRepository;
 
-    public String getIconUrlByColorAndType (String color, String elementalType) {
+    public String getIconUrlByColorAndType (String color, ElementalType elementalType) {
         return roundIconRepository.findByColorAndElementalType(color, elementalType)
                 .map(RoundIcon :: getImageUrl)
                 .orElseThrow(CardNotFoundException::new);

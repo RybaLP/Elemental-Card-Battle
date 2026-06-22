@@ -3,7 +3,7 @@ package com.elemental_card_battle.elemental_card_battle.manager;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardInstance;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardPlayDto;
 import com.elemental_card_battle.elemental_card_battle.model.*;
-import com.elemental_card_battle.elemental_card_battle.service.CardService;
+import com.elemental_card_battle.elemental_card_battle.card.CardService;
 import com.elemental_card_battle.elemental_card_battle.util.GameSessionBroadcaster;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

@@ -1,10 +1,9 @@
-package com.elemental_card_battle.elemental_card_battle.controller;
+package com.elemental_card_battle.elemental_card_battle.gamesession;
 
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardPlayDto;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.PlayRandomCardDto;
 import com.elemental_card_battle.elemental_card_battle.manager.GameSessionManager;
 import com.elemental_card_battle.elemental_card_battle.model.GameSession;
-import com.elemental_card_battle.elemental_card_battle.service.GameSessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

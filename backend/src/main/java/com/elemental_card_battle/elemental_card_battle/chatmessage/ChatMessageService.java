@@ -1,4 +1,4 @@
-package com.elemental_card_battle.elemental_card_battle.service;
+package com.elemental_card_battle.elemental_card_battle.chatmessage;
 
 import com.elemental_card_battle.elemental_card_battle.dto.chatmessage.ChatMessageDto;
 import com.elemental_card_battle.elemental_card_battle.dto.chatmessage.ChatMessageReqDto;

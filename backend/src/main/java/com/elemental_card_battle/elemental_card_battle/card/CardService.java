@@ -1,7 +1,7 @@
-package com.elemental_card_battle.elemental_card_battle.service;
+package com.elemental_card_battle.elemental_card_battle.card;
 
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardInstance;
-import com.elemental_card_battle.elemental_card_battle.model.Card;
+import com.elemental_card_battle.elemental_card_battle.card.model.Card;
 import com.elemental_card_battle.elemental_card_battle.repository.CardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

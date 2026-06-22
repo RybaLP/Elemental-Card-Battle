@@ -8,6 +8,7 @@ import com.elemental_card_battle.elemental_card_battle.exception.player.PlayerNo
 import com.elemental_card_battle.elemental_card_battle.exception.room.NotRoomOwnerException;
 import com.elemental_card_battle.elemental_card_battle.exception.room.RoomFullException;
 import com.elemental_card_battle.elemental_card_battle.exception.room.RoomNotFoundException;
+import com.elemental_card_battle.elemental_card_battle.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -56,4 +57,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleUserNotFound(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 }

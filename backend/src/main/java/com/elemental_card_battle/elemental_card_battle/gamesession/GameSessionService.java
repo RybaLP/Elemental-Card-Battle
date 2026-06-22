@@ -1,5 +1,7 @@
-package com.elemental_card_battle.elemental_card_battle.service;
+package com.elemental_card_battle.elemental_card_battle.gamesession;
 
+import com.elemental_card_battle.elemental_card_battle.card.CardService;
+import com.elemental_card_battle.elemental_card_battle.card.ElementalType;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardInstance;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardPlayDto;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.PlayRandomCardDto;
@@ -7,6 +9,7 @@ import com.elemental_card_battle.elemental_card_battle.dto.gamesession.RoundResu
 import com.elemental_card_battle.elemental_card_battle.exception.game.GameSessionNotFoundException;
 import com.elemental_card_battle.elemental_card_battle.manager.GameSessionManager;
 import com.elemental_card_battle.elemental_card_battle.model.*;
+import com.elemental_card_battle.elemental_card_battle.service.RoundIconService;
 import com.elemental_card_battle.elemental_card_battle.util.GameSessionBroadcaster;
 import com.elemental_card_battle.elemental_card_battle.util.TurnTimer;
 import lombok.RequiredArgsConstructor;
@@ -182,9 +185,9 @@ public class GameSessionService  {
         }
 
 //        if elemental types are different...
-        if (p1Card.elementalType().equals("FIRE") && p2Card.elementalType().equals("ICE")
-                || p1Card.elementalType().equals("WATER") && p2Card.elementalType().equals("FIRE")
-                || p1Card.elementalType().equals("ICE") && p2Card.elementalType().equals("WATER")) {
+        if (p1Card.elementalType().equals(ElementalType.FIRE) && p2Card.elementalType().equals(ElementalType.ICE)
+                || p1Card.elementalType().equals(ElementalType.WATER) && p2Card.elementalType().equals(ElementalType.FIRE)
+                || p1Card.elementalType().equals(ElementalType.ICE) && p2Card.elementalType().equals(ElementalType.WATER)) {
             return p1Id;
         } else {
             return p2Id;
@@ -213,17 +216,17 @@ public class GameSessionService  {
         for (WonRound round : rounds) {
 
             String color = round.getColor();
-            String elementalType = round.getElementalType();
+            ElementalType elementalType = round.getElementalType();
 
-            if (elementalType.equals("ICE")) {
+            if (elementalType.equals(ElementalType.ICE)) {
                 iceCounts.put(color, iceCounts.getOrDefault(color, 0) + 1);
             }
 
-            if (elementalType.equals("FIRE")) {
+            if (elementalType.equals(ElementalType.FIRE)) {
                 fireCounts.put(color, fireCounts.getOrDefault(color, 0) + 1);
             }
 
-            if (elementalType.equals("WATER")) {
+            if (elementalType.equals(ElementalType.FIRE)) {
                 waterCounts.put(color, waterCounts.getOrDefault(color, 0) + 1);
             }
 
