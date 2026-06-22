@@ -1,8 +1,7 @@
-package com.elemental_card_battle.elemental_card_battle.controller;
+package com.elemental_card_battle.elemental_card_battle.chatmessage;
 
 import com.elemental_card_battle.elemental_card_battle.dto.chatmessage.ChatMessageDto;
 import com.elemental_card_battle.elemental_card_battle.dto.chatmessage.ChatMessageReqDto;
-import com.elemental_card_battle.elemental_card_battle.service.ChatMessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

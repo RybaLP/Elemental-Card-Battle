@@ -9,6 +9,7 @@ import com.elemental_card_battle.elemental_card_battle.manager.Lobby;
 import com.elemental_card_battle.elemental_card_battle.mapper.RoomMapper;
 import com.elemental_card_battle.elemental_card_battle.model.Player;
 import com.elemental_card_battle.elemental_card_battle.model.Room;
+import com.elemental_card_battle.elemental_card_battle.room.RoomService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

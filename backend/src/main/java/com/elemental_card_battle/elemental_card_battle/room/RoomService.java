@@ -1,4 +1,4 @@
-package com.elemental_card_battle.elemental_card_battle.service;
+package com.elemental_card_battle.elemental_card_battle.room;
 
 import com.elemental_card_battle.elemental_card_battle.dto.room.*;
 import com.elemental_card_battle.elemental_card_battle.exception.player.PlayerNotFoundException;
@@ -9,6 +9,7 @@ import com.elemental_card_battle.elemental_card_battle.manager.Lobby;
 import com.elemental_card_battle.elemental_card_battle.mapper.RoomMapper;
 import com.elemental_card_battle.elemental_card_battle.model.Player;
 import com.elemental_card_battle.elemental_card_battle.model.Room;
+import com.elemental_card_battle.elemental_card_battle.service.BotService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;

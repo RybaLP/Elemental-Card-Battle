@@ -1,5 +1,6 @@
 package com.elemental_card_battle.elemental_card_battle.model;
 
+import com.elemental_card_battle.elemental_card_battle.card.ElementalType;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,6 +11,6 @@ public class WonRound {
     private String color;
 
 //    elemental card type which won the round
-    private String elementalType;
+    private ElementalType elementalType;
     private String imageUrl;
 }

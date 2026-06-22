@@ -1,4 +1,4 @@
-package com.elemental_card_battle.elemental_card_battle.service;
+package com.elemental_card_battle.elemental_card_battle.player;
 
 import com.elemental_card_battle.elemental_card_battle.dto.player.PlayerDto;
 import com.elemental_card_battle.elemental_card_battle.exception.player.InvalidPlayerNicknameException;

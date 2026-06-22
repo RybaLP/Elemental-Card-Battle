@@ -1,8 +1,11 @@
 package com.elemental_card_battle.elemental_card_battle.service;
 
+import com.elemental_card_battle.elemental_card_battle.card.CardService;
+import com.elemental_card_battle.elemental_card_battle.card.ElementalType; // Import Enuma
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardInstance;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardPlayDto;
 import com.elemental_card_battle.elemental_card_battle.exception.game.GameSessionNotFoundException;
+import com.elemental_card_battle.elemental_card_battle.gamesession.GameSessionService;
 import com.elemental_card_battle.elemental_card_battle.manager.GameSessionManager;
 import com.elemental_card_battle.elemental_card_battle.model.*;
 import com.elemental_card_battle.elemental_card_battle.util.GameSessionBroadcaster;
@@ -44,9 +47,10 @@ class GameSessionServiceTest {
 
     @BeforeEach
     void setup() {
-        fireCard = new CardInstance("fire-instance-id", 1L, 5, "Fire Card", "RED", "FIRE", "fire.png");
-        iceCard = new CardInstance("ice-instance-id", 2L, 3, "Ice Card", "BLUE", "ICE", "ice.png");
-        waterCard = new CardInstance("water-instance-id", 3L, 4, "Water Card", "BLUE", "WATER", "water.png");
+        // Zmieniono Stringi na ElementalType
+        fireCard = new CardInstance("fire-instance-id", 1L, 5, "Fire Card", "RED", ElementalType.FIRE, "fire.png");
+        iceCard = new CardInstance("ice-instance-id", 2L, 3, "Ice Card", "BLUE", ElementalType.ICE, "ice.png");
+        waterCard = new CardInstance("water-instance-id", 3L, 4, "Water Card", "BLUE", ElementalType.WATER, "water.png");
 
         p1 = PlayerState.builder()
                 .playerId("p1-id")
@@ -104,7 +108,7 @@ class GameSessionServiceTest {
             p1.setSelectedCard(fireCard);
             p2.setSelectedCard(iceCard);
 
-            when(roundIconService.getIconUrlByColorAndType("RED", "FIRE")).thenReturn("icon.png");
+            when(roundIconService.getIconUrlByColorAndType("RED", ElementalType.FIRE)).thenReturn("icon.png");
             when(cardService.generateRandomCard()).thenReturn(fireCard);
 
             gameSessionService.resolveRound(gameSession);
@@ -119,7 +123,8 @@ class GameSessionServiceTest {
             p1.setSelectedCard(waterCard);
             p2.setSelectedCard(iceCard);
 
-            when(roundIconService.getIconUrlByColorAndType("BLUE", "ICE")).thenReturn("icon.png");
+            // Poprawiono typ w mocku
+            when(roundIconService.getIconUrlByColorAndType("BLUE", ElementalType.ICE)).thenReturn("icon.png");
             when(cardService.generateRandomCard()).thenReturn(fireCard);
 
             gameSessionService.resolveRound(gameSession);
@@ -131,13 +136,13 @@ class GameSessionServiceTest {
         @Test
         @DisplayName("Should give point to higher power when same elemental type")
         void shouldGivePointToHigherPowerWhenSameType() {
-            CardInstance strongFire = new CardInstance("strong-fire", 1L, 10, "Strong Fire", "RED", "FIRE", "fire.png");
-            CardInstance weakFire = new CardInstance("weak-fire", 1L, 2, "Weak Fire", "RED", "FIRE", "fire.png");
+            CardInstance strongFire = new CardInstance("strong-fire", 1L, 10, "Strong Fire", "RED", ElementalType.FIRE, "fire.png");
+            CardInstance weakFire = new CardInstance("weak-fire", 1L, 2, "Weak Fire", "RED", ElementalType.FIRE, "fire.png");
 
             p1.setSelectedCard(strongFire);
             p2.setSelectedCard(weakFire);
 
-            when(roundIconService.getIconUrlByColorAndType("RED", "FIRE")).thenReturn("icon.png");
+            when(roundIconService.getIconUrlByColorAndType("RED", ElementalType.FIRE)).thenReturn("icon.png");
             when(cardService.generateRandomCard()).thenReturn(fireCard);
 
             gameSessionService.resolveRound(gameSession);
@@ -149,8 +154,8 @@ class GameSessionServiceTest {
         @Test
         @DisplayName("Should return draw when same type and same power")
         void shouldReturnDrawWhenSameTypeAndPower() {
-            CardInstance fire1 = new CardInstance("fire1", 1L, 5, "Fire", "RED", "FIRE", "fire.png");
-            CardInstance fire2 = new CardInstance("fire2", 1L, 5, "Fire", "RED", "FIRE", "fire.png");
+            CardInstance fire1 = new CardInstance("fire1", 1L, 5, "Fire", "RED", ElementalType.FIRE, "fire.png");
+            CardInstance fire2 = new CardInstance("fire2", 1L, 5, "Fire", "RED", ElementalType.FIRE, "fire.png");
 
             p1.setSelectedCard(fire1);
             p2.setSelectedCard(fire2);

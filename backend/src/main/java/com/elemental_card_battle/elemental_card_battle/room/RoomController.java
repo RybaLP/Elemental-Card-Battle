@@ -1,7 +1,6 @@
-package com.elemental_card_battle.elemental_card_battle.controller;
+package com.elemental_card_battle.elemental_card_battle.room;
 
 import com.elemental_card_battle.elemental_card_battle.dto.room.*;
-import com.elemental_card_battle.elemental_card_battle.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
