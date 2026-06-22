@@ -18,6 +18,10 @@ public class CardService {
 
     private final CardRepository cardRepository;
 
+    public List<Card> getStarterDeck() {
+        return cardRepository.getFreeCards();
+    }
+
     public List<CardInstance> generateInitialHand() {
         List<Card> allCards = cardRepository.findAll();
         Random random = new Random();

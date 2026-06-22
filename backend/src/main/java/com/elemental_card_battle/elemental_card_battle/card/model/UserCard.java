@@ -30,4 +30,10 @@ public class UserCard {
 
     @Column(name = "acquired_at", nullable = false)
     private LocalDateTime acquiredAt;
+
+    public UserCard (User user, Card card) {
+        this.user = user;
+        this.card = card;
+        this.acquiredAt = LocalDateTime.now();
+    }
 }
