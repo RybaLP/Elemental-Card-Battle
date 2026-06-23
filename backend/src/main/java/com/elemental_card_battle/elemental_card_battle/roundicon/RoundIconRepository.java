@@ -1,4 +1,4 @@
-package com.elemental_card_battle.elemental_card_battle.repository;
+package com.elemental_card_battle.elemental_card_battle.roundicon;
 
 import com.elemental_card_battle.elemental_card_battle.card.ElementalType;
 import com.elemental_card_battle.elemental_card_battle.model.RoundIcon;

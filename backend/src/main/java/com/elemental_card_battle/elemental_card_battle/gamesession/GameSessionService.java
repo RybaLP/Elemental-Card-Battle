@@ -9,7 +9,7 @@ import com.elemental_card_battle.elemental_card_battle.dto.gamesession.RoundResu
 import com.elemental_card_battle.elemental_card_battle.exception.game.GameSessionNotFoundException;
 import com.elemental_card_battle.elemental_card_battle.manager.GameSessionManager;
 import com.elemental_card_battle.elemental_card_battle.model.*;
-import com.elemental_card_battle.elemental_card_battle.service.RoundIconService;
+import com.elemental_card_battle.elemental_card_battle.roundicon.RoundIconService;
 import com.elemental_card_battle.elemental_card_battle.util.GameSessionBroadcaster;
 import com.elemental_card_battle.elemental_card_battle.util.TurnTimer;
 import lombok.RequiredArgsConstructor;
