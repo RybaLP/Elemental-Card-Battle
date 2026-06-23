@@ -2,7 +2,6 @@ package com.elemental_card_battle.elemental_card_battle.card;
 
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardInstance;
 import com.elemental_card_battle.elemental_card_battle.card.model.Card;
-import com.elemental_card_battle.elemental_card_battle.repository.CardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +16,18 @@ import java.util.stream.IntStream;
 public class CardService {
 
     private final CardRepository cardRepository;
+    private final UserCardRepository userCardRepository;
 
     public List<Card> getStarterDeck() {
         return cardRepository.getFreeCards();
+    }
+
+    public List<Card> getCardsToBuy () {
+        return cardRepository.getPaidCards();
+    }
+
+    public List<Card> getOwnedCards (String username){
+        return userCardRepository.findCardsByEmail(username);
     }
 
     public List<CardInstance> generateInitialHand() {
