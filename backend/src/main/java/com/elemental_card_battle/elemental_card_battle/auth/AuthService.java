@@ -8,7 +8,6 @@ import com.elemental_card_battle.elemental_card_battle.card.model.Card;
 import com.elemental_card_battle.elemental_card_battle.card.model.UserCard;
 import com.elemental_card_battle.elemental_card_battle.exception.auth.DifferentPasswordsException;
 import com.elemental_card_battle.elemental_card_battle.exception.user.UserNotFoundException;
-import com.elemental_card_battle.elemental_card_battle.repository.CardRepository;
 import com.elemental_card_battle.elemental_card_battle.security.JwtService;
 import com.elemental_card_battle.elemental_card_battle.user.User;
 import com.elemental_card_battle.elemental_card_battle.user.UserRepository;
@@ -19,7 +18,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
