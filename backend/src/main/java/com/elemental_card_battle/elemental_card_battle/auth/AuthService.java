@@ -41,7 +41,7 @@ public class AuthService {
         User user = User.builder()
                 .username(registerRequest.username())
                 .email(registerRequest.email())
-                .password(passwordEncoder.encode(registerRequest.password())) // Haszujemy hasło!
+                .password(passwordEncoder.encode(registerRequest.password()))
                 .build();
         userRepository.save(user);
 
