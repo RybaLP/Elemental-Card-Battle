@@ -3,7 +3,7 @@ package com.elemental_card_battle.elemental_card_battle.auth;
 import com.elemental_card_battle.elemental_card_battle.auth.dto.LoginRequest;
 import com.elemental_card_battle.elemental_card_battle.auth.dto.RegisterRequest;
 import com.elemental_card_battle.elemental_card_battle.card.CardService;
-import com.elemental_card_battle.elemental_card_battle.card.UserCardRepository;
+import com.elemental_card_battle.elemental_card_battle.card.UserCardService;
 import com.elemental_card_battle.elemental_card_battle.card.model.Card;
 import com.elemental_card_battle.elemental_card_battle.card.model.UserCard;
 import com.elemental_card_battle.elemental_card_battle.exception.auth.DifferentPasswordsException;
@@ -25,11 +25,12 @@ import java.util.List;
 public class AuthService {
 
     private final JwtService jwtService;
+    private final UserCardService userCardService;
+    private final CardService cardService;
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final CardService cardService;
-    private final UserCardRepository userCardRepository;
 
     @Transactional
     public String handleRegister(RegisterRequest registerRequest) {
@@ -46,7 +47,7 @@ public class AuthService {
 
         List<Card> freeCards = cardService.getStarterDeck();
         for (Card card : freeCards) {
-            userCardRepository.save(new UserCard(user,card));
+            userCardService.saveUserCard(new UserCard(user,card));
         }
         return jwtService.generateToken(user);
     }
