@@ -1,4 +1,4 @@
-package com.elemental_card_battle.elemental_card_battle.model;
+package com.elemental_card_battle.elemental_card_battle.chatmessage;
 
 import lombok.Builder;
 import lombok.Data;

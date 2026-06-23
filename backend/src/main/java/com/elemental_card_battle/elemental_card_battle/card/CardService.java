@@ -2,6 +2,7 @@ package com.elemental_card_battle.elemental_card_battle.card;
 
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardInstance;
 import com.elemental_card_battle.elemental_card_battle.card.model.Card;
+import com.elemental_card_battle.elemental_card_battle.exception.card.CardNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,11 @@ public class CardService {
 
     private final CardRepository cardRepository;
     private final UserCardRepository userCardRepository;
+
+    public Card findCardById (Long id) {
+        return cardRepository.findById(id)
+                .orElseThrow(CardNotFoundException::new);
+    }
 
     public List<Card> getStarterDeck() {
         return cardRepository.getFreeCards();
