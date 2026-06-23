@@ -8,6 +8,7 @@ import com.elemental_card_battle.elemental_card_battle.exception.game.GameSessio
 import com.elemental_card_battle.elemental_card_battle.gamesession.GameSessionService;
 import com.elemental_card_battle.elemental_card_battle.manager.GameSessionManager;
 import com.elemental_card_battle.elemental_card_battle.model.*;
+import com.elemental_card_battle.elemental_card_battle.roundicon.RoundIconService;
 import com.elemental_card_battle.elemental_card_battle.util.GameSessionBroadcaster;
 import com.elemental_card_battle.elemental_card_battle.util.TurnTimer;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +48,7 @@ class GameSessionServiceTest {
 
     @BeforeEach
     void setup() {
-        // Zmieniono Stringi na ElementalType
+
         fireCard = new CardInstance("fire-instance-id", 1L, 5, "Fire Card", "RED", ElementalType.FIRE, "fire.png");
         iceCard = new CardInstance("ice-instance-id", 2L, 3, "Ice Card", "BLUE", ElementalType.ICE, "ice.png");
         waterCard = new CardInstance("water-instance-id", 3L, 4, "Water Card", "BLUE", ElementalType.WATER, "water.png");
@@ -123,7 +124,6 @@ class GameSessionServiceTest {
             p1.setSelectedCard(waterCard);
             p2.setSelectedCard(iceCard);
 
-            // Poprawiono typ w mocku
             when(roundIconService.getIconUrlByColorAndType("BLUE", ElementalType.ICE)).thenReturn("icon.png");
             when(cardService.generateRandomCard()).thenReturn(fireCard);
 
