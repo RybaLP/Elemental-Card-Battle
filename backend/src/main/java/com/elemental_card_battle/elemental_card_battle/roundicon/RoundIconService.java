@@ -1,9 +1,8 @@
-package com.elemental_card_battle.elemental_card_battle.service;
+package com.elemental_card_battle.elemental_card_battle.roundicon;
 
 import com.elemental_card_battle.elemental_card_battle.card.ElementalType;
 import com.elemental_card_battle.elemental_card_battle.exception.card.CardNotFoundException;
 import com.elemental_card_battle.elemental_card_battle.model.RoundIcon;
-import com.elemental_card_battle.elemental_card_battle.repository.RoundIconRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

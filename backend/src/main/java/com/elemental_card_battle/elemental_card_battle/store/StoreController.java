@@ -5,9 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,6 +21,17 @@ public class StoreController {
         String email = user.getUsername();
         List<CardInStoreDto> offer = storeService.getCurrentStore(email);
         return ResponseEntity.ok(offer);
+    }
+
+    @PostMapping("/{cardId}/purchase")
+    public ResponseEntity<Void> purchaseCard(
+            @AuthenticationPrincipal UserDetails user,
+            @PathVariable Long cardId) {
+
+        String email = user.getUsername();
+        storeService.purchaseCard(email, cardId);
+
+        return ResponseEntity.noContent().build();
     }
 
 }
