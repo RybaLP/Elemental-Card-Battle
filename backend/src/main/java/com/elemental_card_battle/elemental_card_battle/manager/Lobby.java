@@ -1,9 +1,8 @@
 package com.elemental_card_battle.elemental_card_battle.manager;
 
-import com.elemental_card_battle.elemental_card_battle.model.Player;
 import com.elemental_card_battle.elemental_card_battle.model.Room;
+import com.elemental_card_battle.elemental_card_battle.session.ActiveSession;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.WebSocketSession;
 
 import java.util.Collection;
 import java.util.Map;
@@ -13,20 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class Lobby {
 
-    private final Map<String, Player> onlinePlayers = new ConcurrentHashMap<>();
-    private final Map<String , Room > rooms = new ConcurrentHashMap<>();
-
-    public void addPlayer(Player player) {
-        onlinePlayers.put(player.getId(), player);
-    }
-
-    public void removePlayer(String playerId) {
-        onlinePlayers.remove(playerId);
-    }
-
-    public Player getPlayer(String playerId) {
-        return onlinePlayers.get(playerId);
-    }
+    private final Map<String, Room> rooms = new ConcurrentHashMap<>();
 
     public Collection<Room> getRooms() {
         return rooms.values();
@@ -36,22 +22,19 @@ public class Lobby {
         return rooms.get(roomId);
     }
 
-    public Room createPublicRoom(String name, Player owner) {
-
+    public Room createPublicRoom(String name, ActiveSession owner) {
         Room room = Room.builder()
                 .roomOwner(owner)
                 .name(name)
                 .id(UUID.randomUUID().toString())
                 .isPrivate(false)
                 .build();
-
         room.addPlayer(owner);
-
         rooms.put(room.getId(), room);
         return room;
     }
 
-    public Room createPrivateRoom (String name ,  Player owner , String password) {
+    public Room createPrivateRoom(String name, ActiveSession owner, String password) {
         Room room = Room.builder()
                 .roomOwner(owner)
                 .password(password)
@@ -59,9 +42,7 @@ public class Lobby {
                 .isPrivate(true)
                 .id(UUID.randomUUID().toString())
                 .build();
-
         room.addPlayer(owner);
-
         rooms.put(room.getId(), room);
         return room;
     }
@@ -70,13 +51,11 @@ public class Lobby {
         rooms.remove(roomId);
     }
 
-    public Room getRoomByPlayerId (String playerId) {
-
+    public Room getRoomByUserId(Long userId) {
         return rooms.values().stream()
-                .filter(room -> room.getPlayers()
-                        .stream().anyMatch(p -> p.getId().equals(playerId)))
+                .filter(room -> room.getPlayers().stream()
+                        .anyMatch(s -> s.getUserId().equals(userId)))
                 .findFirst()
                 .orElse(null);
     }
-
 }
