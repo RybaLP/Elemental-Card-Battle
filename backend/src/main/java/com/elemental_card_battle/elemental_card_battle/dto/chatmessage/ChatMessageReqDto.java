@@ -4,5 +4,5 @@ public record ChatMessageReqDto(
         String senderNickname,
         String message,
         String roomId,
-        String senderId
-){}
+        Long senderId
+) {}
