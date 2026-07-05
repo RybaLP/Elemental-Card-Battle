@@ -1,16 +1,19 @@
-import {create} from "zustand";
+import { create } from "zustand";
 import { Player } from "@/types/player";
 
 interface PlayerStore {
-    player : Player,
-    setPlayer : (player : Player) => void;
+    player: Player;
+    setPlayer: (player: Player) => void;
 }
 
 export const usePlayerStore = create<PlayerStore>((set) => ({
-    player : {
-        nickname : "",
-        id : "",
-        isBot : false
+    player: {
+        id: 0,
+        nickname: "",
+        currency: 0,
+        gamesWon: 0,
+        gamesLost: 0,
+        isBot: false,
     },
-    setPlayer : (player) => set({player})    
+    setPlayer: (player) => set({ player }),
 }));

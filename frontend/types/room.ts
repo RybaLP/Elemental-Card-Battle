@@ -1,10 +1,10 @@
-import { Player } from "./player";
+import { Session } from "./session";
 
 export interface Room {
     id : string ,
     name : string , 
     isPrivate : boolean,
     isFull : boolean,
-    roomOwnerId : string,
-    players : Player[]
+    roomOwnerId : number,
+    players : Session[]
 }
