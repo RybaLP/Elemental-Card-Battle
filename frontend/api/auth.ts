@@ -1,3 +1,4 @@
+import privateClient from "./client/privateClient";
 import publicClient from "./client/publicClient";
 
 const setTokenCookie = (token: string) => {
@@ -22,7 +23,7 @@ export const login = async (email: string, password: string) => {
         email,
         password
     });
-    const token = res.data;
+    const token = res.data.jwt
     setTokenCookie(token);
     return token;
 };
@@ -37,3 +38,8 @@ export const getToken = () => {
         .find(row => row.startsWith("token="))
         ?.split("=")[1];
 };
+
+export const getProfile = async () => {
+    const res = await privateClient.get("/users");
+    return res.data;
+}
