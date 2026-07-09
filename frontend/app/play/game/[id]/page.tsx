@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import { useParams } from "next/navigation";
 import { useGameSessionStore } from "@/store/useGameSessionStore";
 import { usePlayerStore } from "@/store/usePlayerStore";
+import { getGameSession } from "@/api/gameSession";
 
 import MyPov from "./components/myPov";
 import BattleField from "./components/battleField";
@@ -17,16 +19,35 @@ import PlayResolveRound from "@/helper/playResolveRound";
 import PlayEnemySelectedCard from "@/helper/playEnemySelectedCard";
 
 const Page = () => {
+  const { id: sessionId } = useParams<{ id: string }>();
   const session = useGameSessionStore((state) => state.session);
+  const setSession = useGameSessionStore((state) => state.setSession);
   const initializePlayers = useGameSessionStore((state) => state.initializePlayers);
   const myPlayer = useGameSessionStore((state) => state.myPlayer);
-  const myWonRounds = useGameSessionStore(state => state.myWonRounds);
-  const enemyWonRounds = useGameSessionStore(state => state.enemyWonRounds);
-  const isGameOver = useGameSessionStore(state => state.isGameOver);
+  const myWonRounds = useGameSessionStore((state) => state.myWonRounds);
+  const enemyWonRounds = useGameSessionStore((state) => state.enemyWonRounds);
+  const isGameOver = useGameSessionStore((state) => state.isGameOver);
   const player = usePlayerStore((state) => state.player);
-  const showTimer = useGameSessionStore(state => state.showTimer);
+  const showTimer = useGameSessionStore((state) => state.showTimer);
 
-  useGameSessionWS(session?.id ?? "", player?.id ?? "");
+  useGameSessionWS(session?.id ?? "", player?.id ?? 0);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    const fetchSession = async () => {
+      try {
+        const sessionData = await getGameSession(sessionId);
+        if (sessionData) {
+          setSession(sessionData);
+        }
+      } catch (error) {
+        console.error("Failed to fetch game session:", error);
+      }
+    };
+    if (!session) {
+      fetchSession();
+    }
+  }, [sessionId, session, setSession]);
 
   useEffect(() => {
     if (!session || !player) return;
@@ -37,16 +58,12 @@ const Page = () => {
 
   if (!myPlayer?.currentHand) return <div className="flex items-center justify-center h-screen text-white">Loading your hand...</div>;
 
-  
   return (
-    
     <div className="relative w-full h-screen bg-linear-to-b from-gray-900 via-blue-950 to-gray-900 overflow-hidden min-w-4xl">
-      
       <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-      
-      {/* it is an invisible component - plays sound whenever state turns to true */}
-      <PlayResolveRound/>
-      <PlayEnemySelectedCard/>
+
+      <PlayResolveRound />
+      <PlayEnemySelectedCard />
 
       {isGameOver && <GameOver />}
 
@@ -55,8 +72,8 @@ const Page = () => {
           <RoundTimer />
         </div>
       )}
-      
-      <AudioPlayer/>
+
+      <AudioPlayer />
 
       <div className="absolute top-4 left-0 right-0 flex justify-between px-8 z-10">
         <div className="flex flex-col items-start">
@@ -71,12 +88,8 @@ const Page = () => {
       </div>
 
       <div className="flex h-full pt-24 w-full max-w-[1920px] mx-auto">
-        
         <div className="w-1/4 flex items-center justify-end pr-12">
-          <MyPov
-            cardsInHand={myPlayer.currentHand}
-            sessionId={session.id}
-          />
+          <MyPov cardsInHand={myPlayer.currentHand} sessionId={session.id} />
         </div>
 
         <div className="w-2/4 flex items-center justify-center">
@@ -86,7 +99,6 @@ const Page = () => {
         <div className="w-1/4 flex items-center justify-start pl-12">
           <Enemy />
         </div>
-
       </div>
     </div>
   );

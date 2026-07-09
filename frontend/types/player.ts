@@ -1,5 +1,7 @@
 export interface Player {
-    nickname : string ;
-    id : string ;
-    isBot : boolean ;
+    id: number;
+    nickname: string;
+    currency: number;
+    gamesWon: number;
+    gamesLost: number;
 }

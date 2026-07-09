@@ -13,6 +13,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -27,6 +29,14 @@ public class UserCardService {
                 user.getId(), card.getId(), owns);
 
         return owns;
+    }
+
+    public List<Card> getOwnedCards (String username){
+        return userCardRepository.findCardsByEmail(username);
+    }
+
+    public List<Card> getOwnedCardsByUserId(Long userId) {
+        return userCardRepository.findCardsByUserId(userId);
     }
 
     @Transactional

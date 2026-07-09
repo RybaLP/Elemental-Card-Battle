@@ -2,33 +2,20 @@
 
 import { useEffect } from "react";
 import { Room } from "@/types/room";
-import { Client } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
+import { useStomp } from "./stompContext";
 
-const useRoomsWS = (setRooms : (rooms : Room[]) => void) => {
-  
-    useEffect (()=>{
-        const socket = new SockJS(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ws`);
+const useRoomsWS = (setRooms: (rooms: Room[]) => void) => {
+    const { client, connected } = useStomp();
 
-         const stompClient = new Client({
-            webSocketFactory: () => socket,
-            reconnectDelay: 5000,
-            debug: () => {}
+    useEffect(() => {
+        if (!client || !connected) return;
+
+        const sub = client.subscribe("/topic/rooms", (message) => {
+            setRooms(JSON.parse(message.body));
         });
 
-        stompClient.onConnect = () => {
-            stompClient.subscribe("/topic/rooms", (message) => {
-                const rooms : Room [] = JSON.parse(message.body);
-                setRooms(rooms);
-            });
-        };
-
-        stompClient.activate();
-
-        return () => {
-            stompClient.deactivate();
-        }
-    },[setRooms]);
-}
+        return () => sub.unsubscribe();
+    }, [client, connected, setRooms]);
+};
 
 export default useRoomsWS

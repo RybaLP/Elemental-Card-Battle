@@ -1,145 +1,114 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import useChatMessageWS from "@/lib/ws/useChatMessageWS";
 import { useCurrentRoomStore } from "@/store/useCurrentRoomStore";
 import { ChatMessage } from "@/types/chatMessage";
-import { usePlayerStore } from "@/store/usePlayerStore";
-import { sendMessage } from "@/api/message";
+import { useStomp } from "@/lib/ws/stompContext";
+import useChatMessageWS from "@/lib/ws/useChatMessageWS";
+import { sendChatMessage } from "@/api/message";
+import { getUserIdFromToken } from "@/api/auth";
+
 const ChatBox = () => {
-  const { currentRoom } = useCurrentRoomStore();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [currentMessage, setCurrentMessage] = useState("");
-  const { player } = usePlayerStore();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+    const { currentRoom } = useCurrentRoomStore();
+    const { client } = useStomp();
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [currentMessage, setCurrentMessage] = useState("");
+    const [loading, setLoading] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const userId = getUserIdFromToken();
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-  if (!currentRoom) {
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+
+    useChatMessageWS(currentRoom?.id ?? "", (message: ChatMessage) => {
+        setMessages(prev => [...prev, message]);
+    });
+
+    if (!currentRoom) return null;
+
+    const handleSendMessage = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        if (!currentMessage.trim() || loading || !client) return;
+
+        setLoading(true);
+        try {
+            sendChatMessage(client, currentMessage);
+            setCurrentMessage("");
+            inputRef.current?.focus();
+        } catch (error) {
+            console.error("Failed to send message:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-      <div className="bg-gray-800 rounded-xl p-8 text-center border border-gray-700 h-full flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
-        <p className="text-gray-400">Loading room...</p>
-      </div>
-    );
-  }
-  useChatMessageWS(currentRoom.id, (newMessage: ChatMessage) => {
-    setMessages((prev) => [...prev, newMessage]);
-  });
-  const handleSendMessage = async () => {
-    if (!currentMessage.trim()) return;
-    await sendMessage(
-      currentRoom.id,
-      player.id,
-      player.nickname,
-      currentMessage
-    );
-    setCurrentMessage("");
-    inputRef.current?.focus();
-  };
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-  return (
-    <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col">
-      <div className="px-6 py-4 border-b border-gray-700 bg-gray-800 shrink-0">
-        <div className="flex items-center justify-between">
-          <h3 className="text-white font-bold text-xl">ROOM CHAT</h3>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span className="text-green-400 text-sm font-medium">
-              {currentRoom.players.length}/2
-            </span>
-          </div>
-        </div>
-      </div>
-      <div
-        ref={messagesContainerRef}
-        className="overflow-y-auto bg-gray-900 p-6 flex-none"
-        style={{ height: "400px" }}
-      >
-        {messages.length === 0 ? (
-          <div className="text-center py-16 text-gray-500 h-full flex flex-col items-center justify-center">
-            <div className="text-3xl mb-3">🎮</div>
-            <p className="font-medium text-lg">No messages</p>
-            <p className="text-sm mt-2">Be the first to write something!</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {messages.map((message, index) => {
-              const isOwnMessage = message.senderId === player.id;
-              return (
-                <div
-                  key={index}
-                  className={`flex ${
-                    isOwnMessage ? "justify-end" : "justify-start"
-                  } group`}
-                >
-                  <div
-                    className={`max-w-[80%] rounded-lg px-4 py-3 transition-all duration-200 ${
-                      isOwnMessage
-                        ? "bg-purple-600 text-white"
-                        : "bg-gray-700 text-white"
-                    } hover:bg-opacity-90`}
-                  >
-                    <div className="flex items-center gap-3 mb-1">
-                      <span
-                        className={`text-sm font-bold ${
-                          isOwnMessage ? "text-purple-200" : "text-blue-300"
-                        }`}
-                      >
-                        {message.senderNickname}
-                      </span>
-                    </div>
-
-                    <div className="text-sm leading-relaxed wrap-break-word">
-                      {message.message}
-                    </div>
-                  </div>
+        <div className="bg-[#13132a]/80 border border-purple-500/20 rounded-2xl shadow-lg h-80 flex flex-col">
+            {/* Header */}
+            <div className="px-4 py-3 border-b border-white/10 shrink-0 flex items-center justify-between">
+                <h3 className="text-white font-semibold text-sm">Room Chat</h3>
+                <div className="flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                    <span className="text-green-400 text-xs">{currentRoom.players.length}/2</span>
                 </div>
-              );
-            })}
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-      <div className="p-4 border-t border-gray-700 bg-gray-800 shrink-0">
-        <div className="flex gap-2">
-          <input
-            ref={inputRef}
-            type="text"
-            value={currentMessage}
-            onChange={(e) => setCurrentMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Send a message..."
-            className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg
-                     text-white placeholder-gray-400 focus:outline-none focus:border-purple-500
-                     transition-all duration-200"
-            maxLength={200}
-            autoFocus
-          />
+            </div>
 
-          <button
-            onClick={handleSendMessage}
-            disabled={!currentMessage.trim()}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600
-                     disabled:cursor-not-allowed text-white font-semibold rounded-lg
-                     transition-all duration-200 min-w-20"
-          >
-            Send
-          </button>
+            {/* Messages */}
+            <div className="overflow-y-auto p-4 flex-1 space-y-2">
+                {messages.length === 0 ? (
+                    <div className="text-center py-8 text-gray-600 text-sm">
+                        No messages yet
+                    </div>
+                ) : (
+                    messages.map((message, index) => {
+                        const isOwn = message.senderId === userId;
+                        return (
+                            <div key={index} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
+                                <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                                    isOwn ? "bg-purple-600 text-white" : "bg-white/10 text-white"
+                                }`}>
+                                    {!isOwn && (
+                                        <p className="text-xs text-purple-300 font-medium mb-0.5">
+                                            {message.senderNickname}
+                                        </p>
+                                    )}
+                                    <p className="break-words">{message.message}</p>
+                                </div>
+                            </div>
+                        );
+                    })
+                )}
+                <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input */}
+            <form onSubmit={handleSendMessage} className="p-3 border-t border-white/10 shrink-0 flex gap-2">
+                <input
+                    ref={inputRef}
+                    type="text"
+                    value={currentMessage}
+                    onChange={(e) => setCurrentMessage(e.target.value)}
+                    placeholder="Send a message..."
+                    disabled={loading}
+                    maxLength={200}
+                    className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg
+                               text-white placeholder-gray-600 text-sm
+                               focus:outline-none focus:border-purple-500/60 transition-colors
+                               disabled:opacity-50"
+                />
+                <button
+                    type="submit"
+                    disabled={!currentMessage.trim() || loading}
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm
+                               rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                    Send
+                </button>
+            </form>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
+
 export default ChatBox;

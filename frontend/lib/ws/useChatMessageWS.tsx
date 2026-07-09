@@ -2,33 +2,20 @@
 
 import { useEffect } from "react";
 import { ChatMessage } from "@/types/chatMessage";
-import SockJS from "sockjs-client";
-import { Client } from "@stomp/stompjs";
+import { useStomp } from "./stompContext";
 
-const useChatMessageWS = ( roomId : string , setMessages : ( message : ChatMessage ) => void ) => {
+const useChatMessageWS = (roomId: string, setMessages: (message: ChatMessage) => void) => {
+    const { client, connected } = useStomp();
+
     useEffect(() => {
-        const socket = new SockJS(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ws`);
-         
-        const stompClient = new Client({
-            webSocketFactory: () => socket,
-            reconnectDelay: 5000,
-            debug: () => {}
+        if (!client || !connected || !roomId) return;
+
+        const sub = client.subscribe(`/topic/room/${roomId}/chat`, (m) => { 
+            setMessages(JSON.parse(m.body));
         });
 
-        stompClient.onConnect = () => {
-            stompClient.subscribe(`/topic/room/${roomId}/messages` , (m) => {
-                const message : ChatMessage = JSON.parse(m.body);
-                setMessages(message);
-            })
-        }
-
-        stompClient.activate();
-
-        return () => {
-            stompClient.deactivate();
-        }
-
-    } , [setMessages])
-}
+        return () => sub.unsubscribe();
+    }, [client, connected, roomId]);
+};
 
 export default useChatMessageWS;

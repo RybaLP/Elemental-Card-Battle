@@ -1,48 +1,30 @@
 "use client";
 
 import { useEffect } from "react";
-import { Stomp } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
 import { useGameSessionStore } from "@/store/useGameSessionStore";
-import { playCardPick } from "../../helper/cardAudioManager";
 import { useAudioStore } from "@/store/useAudioStore";
+import { playCardPick } from "../../helper/cardAudioManager";
+import { useStomp } from "./stompContext";
 
+export const useGameSessionWS = (sessionId: string, userId: number) => {
+    const { client, connected } = useStomp();
+    const { setSession, setEnemyCard } = useGameSessionStore();
 
-export const useGameSessionWS = (sessionId : string, playerId : string) => {
+    useEffect(() => {
+        if (!client || !connected || !sessionId) return;
 
-    const {setSession, setEnemyCard} = useGameSessionStore();
-
-    useEffect( () =>{
-        if (!sessionId) return;
-
-        const socket = new SockJS(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ws`);
-        
-        const client = Stomp.over(socket);
-
-        client.onConnect = () => {
-            client.subscribe(`/topic/game/${sessionId}/state`,
-                (message) => {
-                    const body = JSON.parse(message.body);
-
-                    switch (body.event) {
-                        case "fullState":
-                            setSession(body.session);
-                            break;
-                        case "GAME_STATE_UPDATE":
-                            setSession(body.session);
-                            break;
-                        default : 
-                            throw new Error("Error");
-                    }
-                }
-            ),
-            client.subscribe(`/topic/game/${sessionId}/card` , (message) => {
+        const subs = [
+            client.subscribe(`/topic/game/${sessionId}/state`, (message) => {
                 const body = JSON.parse(message.body);
+                if (body.event === "fullState" || body.event === "GAME_STATE_UPDATE") {
+                    setSession(body.session);
+                }
+            }),
 
-                if (body.event === "CARD_SELECTED") {
-                    if (body.playerId !== playerId && body.card) {
-                        setEnemyCard(body.card);
-                    }
+            client.subscribe(`/topic/game/${sessionId}/card`, (message) => {
+                const body = JSON.parse(message.body);
+                if (body.event === "CARD_SELECTED" && body.userId !== userId && body.card) {
+                    setEnemyCard(body.card);
                 }
             }),
 
@@ -51,45 +33,31 @@ export const useGameSessionWS = (sessionId : string, playerId : string) => {
                 const store = useGameSessionStore.getState();
                 const audioStore = useAudioStore.getState();
 
+                const isPlayer1 = body.p1Id === userId;
                 store.setIsRevealing(true);
-
-                setTimeout (() => {
-
+                setTimeout(() => {
                     audioStore.setPlayResolveRound(true);
-
-                    const myRounds = body.p1Id === playerId ? body.p1Rounds : body.p2Rounds;    
-                    const enemyRounds = body.p1Id === playerId ? body.p2Rounds : body.p1Rounds; 
-
-                    const myCards = body.p1Id === playerId ? body.p1Cards : body.p2Cards;
-
-                    store.setMyWonRounds(myRounds);
-                    store.setEnemyWonRounds(enemyRounds);
-
-                    store.resetTurn(myCards);
-
-                } , 2500);
-            })
+                    store.setMyWonRounds(isPlayer1 ? body.p1Rounds : body.p2Rounds);
+                    store.setEnemyWonRounds(isPlayer1 ? body.p2Rounds : body.p1Rounds);
+                    store.resetTurn(isPlayer1 ? body.p1Cards : body.p2Cards);
+                }, 2500);
+            }),
 
             client.subscribe(`/topic/game/${sessionId}/countdown`, (message) => {
                 const body = JSON.parse(message.body);
-                const setTimer = useGameSessionStore.getState().setTimer;
-
                 if (body.event === "countDown") {
-                    setTimer(body.seconds);
+                    useGameSessionStore.getState().setTimer(body.seconds);
                 }
             }),
 
-
-            client.subscribe(`/topic/game/${sessionId}/randomCard` , (message) => {
+            client.subscribe(`/topic/game/${sessionId}/randomCard`, (message) => {
                 const body = JSON.parse(message.body);
                 const store = useGameSessionStore.getState();
                 const audioStore = useAudioStore.getState();
-
                 if (body.event === "randomCard") {
-                    if (store.myPlayer?.playerId === body.playerId){
+                    if (store.myPlayer?.userId === body.userId) {
                         store.setSelectedCard(body.card);
                         playCardPick();
-
                     } else {
                         playCardPick();
                         audioStore.setPlayEnemySelectedCard(true);
@@ -101,34 +69,27 @@ export const useGameSessionWS = (sessionId : string, playerId : string) => {
 
             client.subscribe(`/topic/game/${sessionId}/countdown/start`, (message) => {
                 const body = JSON.parse(message.body);
-                const store = useGameSessionStore.getState();
                 if (body.event === "startCountdown") {
-                    store.setShowTimer(true);
+                    useGameSessionStore.getState().setShowTimer(true);
                 }
             }),
 
             client.subscribe(`/topic/game/${sessionId}/countdown/stop`, (message) => {
                 const body = JSON.parse(message.body);
-                const store = useGameSessionStore.getState();
                 if (body.event === "stopCountdown") {
-                    store.setShowTimer(false);
+                    useGameSessionStore.getState().setShowTimer(false);
                 }
             }),
 
-            client.subscribe(`/topic/game/${sessionId}/game-over` , (message) => {
+            client.subscribe(`/topic/game/${sessionId}/game-over`, (message) => {
                 const body = JSON.parse(message.body);
-                const store = useGameSessionStore.getState();
-                
                 if (body.event === "gameOver") {
-                    store.setIsGameOver(true);
-                    store.setGameWinnerMessage(body.message);
+                    useGameSessionStore.getState().setIsGameOver(true);
+                    useGameSessionStore.getState().setGameWinnerMessage(body.message);
                 }
-            })
-        }
+            }),
+        ];
 
-        client.activate();
-
-        return () => {client.deactivate();}
-
-    },[sessionId])
-}
+        return () => subs.forEach(sub => sub.unsubscribe());
+    }, [client, connected, sessionId, userId]);
+};

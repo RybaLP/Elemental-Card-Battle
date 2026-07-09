@@ -9,139 +9,128 @@ interface GameSessionStore {
   myPlayer: PlayerState | null;
   enemyPlayer: PlayerState | null;
 
-  selectedCard : Card | null;
-  enemySelectedCard : Card | null;
+  selectedCard: Card | null;
+  enemySelectedCard: Card | null;
 
-  hasSelectedCard : boolean;
+  hasSelectedCard: boolean;
 
-  myWonRounds : WonRound [];
-  enemyWonRounds : WonRound [];
+  myWonRounds: WonRound[];
+  enemyWonRounds: WonRound[];
 
-  isRevealing : boolean;
+  isRevealing: boolean;
 
-  hoveredCard : Card | null;
+  hoveredCard: Card | null;
 
-  timer : number;
-  showTimer : boolean;
+  timer: number;
+  showTimer: boolean;
 
   isGameOver: boolean;
+  gameWinnerMessage: string;
 
-  gameWinnerMessage : string,
-
-  setGameWinnerMessage : (text : string ) => void;
-
-  setIsGameOver : (value : boolean) => void;
+  setGameWinnerMessage: (text: string) => void;
+  setIsGameOver: (value: boolean) => void;
 
   setSession: (session: GameSession) => void;
-  initializePlayers: (myPlayerId: string) => void;
-  
-  setSelectedCard : (card : Card) => void;
-  setEnemyCard : (card : Card) => void;
+  initializePlayers: (myUserId: number) => void;   // ← teraz number
 
-  resetTurn : (cards : Card []) => void;
+  setSelectedCard: (card: Card) => void;
+  setEnemyCard: (card: Card) => void;
 
-  setHasSelectedCard : (value : boolean) => void;
+  resetTurn: (cards: Card[]) => void;
 
-  setMyWonRounds : (myWonRounds : WonRound[]) => void;
-  setEnemyWonRounds : (enemyWonRounds : WonRound[]) => void;
+  setHasSelectedCard: (value: boolean) => void;
 
-  setIsRevealing : (value : boolean) => void;
+  setMyWonRounds: (rounds: WonRound[]) => void;
+  setEnemyWonRounds: (rounds: WonRound[]) => void;
 
-  setHoveredCard : (card : Card | null) => void;
+  setIsRevealing: (value: boolean) => void;
 
-  setTimer : (value : number) => void;
-  setShowTimer : (value : boolean) => void;
+  setHoveredCard: (card: Card | null) => void;
 
-  refreshCardsInHand : (cards : Card[]) => void;
+  setTimer: (value: number) => void;
+  setShowTimer: (value: boolean) => void;
 
-  clearGameSession : () => void;
+  refreshCardsInHand: (cards: Card[]) => void;
 
+  clearGameSession: () => void;
 }
 
 export const useGameSessionStore = create<GameSessionStore>((set, get) => ({
   session: null,
   myPlayer: null,
   enemyPlayer: null,
-  selectedCard : null,
-  enemySelectedCard : null,
-  hasSelectedCard : false,
-  myWonRounds : [],
-  enemyWonRounds : [],
-  isRevealing : false,
-  hoveredCard : null,
-  timer : 15,
-  showTimer : false,
-  gameWinnerMessage : "",
+  selectedCard: null,
+  enemySelectedCard: null,
+  hasSelectedCard: false,
+  myWonRounds: [],
+  enemyWonRounds: [],
+  isRevealing: false,
+  hoveredCard: null,
+  timer: 15,
+  showTimer: false,
+  gameWinnerMessage: "",
 
-  setGameWinnerMessage : (text) => set({gameWinnerMessage : text}),
+  setGameWinnerMessage: (text) => set({ gameWinnerMessage: text }),
 
   setSession: (session) => set({ session }),
 
-  initializePlayers: (myPlayerId) => {
+  initializePlayers: (myUserId: number) => {
     const session = get().session;
     if (!session) return;
 
-    const isPlayer1 = session.player1.playerId === myPlayerId;
+    const isPlayer1 = session.player1.userId === myUserId;  // ← userId
 
     set({
       myPlayer: isPlayer1 ? session.player1 : session.player2,
-      enemyPlayer: isPlayer1 ? session.player2 : session.player1
+      enemyPlayer: isPlayer1 ? session.player2 : session.player1,
     });
   },
 
-  setSelectedCard : (card : Card) => {
-    set({selectedCard : card})
-  },
+  setSelectedCard: (card) => set({ selectedCard: card }),
 
-  setEnemyCard : (card : Card) => {
-    set({enemySelectedCard : card})
-  },
+  setEnemyCard: (card) => set({ enemySelectedCard: card }),
 
-  resetTurn : (cards : Card[]) => {
-    const {refreshCardsInHand} = get();
+  resetTurn: (cards) => {
+    const { refreshCardsInHand } = get();
     refreshCardsInHand(cards);
-    set({selectedCard : null, hasSelectedCard : false, enemySelectedCard : null, isRevealing : false})
+    set({
+      selectedCard: null,
+      hasSelectedCard: false,
+      enemySelectedCard: null,
+      isRevealing: false,
+    });
   },
 
   isGameOver: false,
 
-  setIsGameOver : (value) => set({isGameOver : value}),
+  setIsGameOver: (value) => set({ isGameOver: value }),
 
-  setHasSelectedCard : (value : boolean) => set({
-    hasSelectedCard : value
-  }),
+  setHasSelectedCard: (value) => set({ hasSelectedCard: value }),
 
-  setMyWonRounds : (rounds) => {
-    set({myWonRounds : rounds});
-  },
+  setMyWonRounds: (rounds) => set({ myWonRounds: rounds }),
 
-  setEnemyWonRounds : (rounds) => {
-    set({enemyWonRounds : rounds})
-  },
+  setEnemyWonRounds: (rounds) => set({ enemyWonRounds: rounds }),
 
-  setIsRevealing : (value) => {
-    set({isRevealing : value})
-  },
+  setIsRevealing: (value) => set({ isRevealing: value }),
 
-  setHoveredCard : (value) => set({hoveredCard : value}), 
+  setHoveredCard: (value) => set({ hoveredCard: value }),
 
-  setTimer : (value) => set({timer : value}),
-  setShowTimer : (value) => set({showTimer : value}),
+  setTimer: (value) => set({ timer: value }),
+  setShowTimer: (value) => set({ showTimer: value }),
 
-  refreshCardsInHand : (cards) => {
-    const {myPlayer} = get();
-
+  refreshCardsInHand: (cards) => {
+    const { myPlayer } = get();
     if (!myPlayer) return;
-
     set({
-      myPlayer : {
+      myPlayer: {
         ...myPlayer,
-        currentHand : cards
-      }
+        currentHand: cards,
+      },
     });
   },
 
-  clearGameSession: () => set({
+  clearGameSession: () =>
+    set({
       session: null,
       myPlayer: null,
       enemyPlayer: null,
@@ -155,6 +144,6 @@ export const useGameSessionStore = create<GameSessionStore>((set, get) => ({
       timer: 15,
       showTimer: true,
       isGameOver: false,
-      gameWinnerMessage: ""
-   })
+      gameWinnerMessage: "",
+    }),
 }));

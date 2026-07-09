@@ -1,27 +1,32 @@
 package com.elemental_card_battle.elemental_card_battle.model;
 
-import lombok.Builder;
-import lombok.Data;
+import com.elemental_card_battle.elemental_card_battle.session.ActiveSession;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class Room {
 
     private String id;
-    private Player roomOwner;
+    private ActiveSession roomOwner;
     private String name;
     private String password;
-
     private boolean isPrivate;
     private boolean isFull;
+
+    @Builder.Default
+    private boolean isGameStarted = false;
 
     private static final long ROOM_TIMEOUT = 120_000;
 
     @Builder.Default
-    private List<Player> players = new ArrayList<>();
+    private List<ActiveSession> players = new ArrayList<>();
 
     @Builder.Default
     private List<ChatMessage> messages = new ArrayList<>();
@@ -29,17 +34,16 @@ public class Room {
     @Builder.Default
     private long lastActivity = System.currentTimeMillis();
 
-
-    public void addPlayer (Player player) {
+    public void addPlayer(ActiveSession session) {
         if (!isFull) {
-            players.add(player);
+            players.add(session);
             isFull = players.size() == 2;
         }
     }
 
-    public void removePlayer (Player player) {
-        players.remove(player);
-        isFull = players.size() == 2;
+    public void removePlayer(ActiveSession session) {
+        players.remove(session);
+        isFull = players.size() >= 2;
     }
 
     public void touch() {

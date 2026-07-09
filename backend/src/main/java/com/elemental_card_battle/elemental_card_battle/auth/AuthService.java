@@ -49,7 +49,7 @@ public class AuthService {
         for (Card card : freeCards) {
             userCardService.saveUserCard(new UserCard(user,card));
         }
-        return jwtService.generateToken(user);
+        return jwtService.generateToken(user, user.getUsername(), user.getId());
     }
 
     public String handleLogin(LoginRequest loginRequest) {
@@ -64,6 +64,6 @@ public class AuthService {
         User user = userRepository.findByEmail(loginRequest.email())
                 .orElseThrow(() -> new UserNotFoundException(loginRequest.email()));
 
-        return jwtService.generateToken(user);
+        return jwtService.generateToken(user, user.getUsername(), user.getId());
     }
 }
