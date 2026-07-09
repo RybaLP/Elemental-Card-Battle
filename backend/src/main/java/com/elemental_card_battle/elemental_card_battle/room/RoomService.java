@@ -1,5 +1,6 @@
 package com.elemental_card_battle.elemental_card_battle.room;
 
+import com.elemental_card_battle.elemental_card_battle.chatmessage.dto.ChatMessageDto;
 import com.elemental_card_battle.elemental_card_battle.dto.room.*;
 import com.elemental_card_battle.elemental_card_battle.exception.room.InvalidRoomPasswordException;
 import com.elemental_card_battle.elemental_card_battle.exception.room.NotRoomOwnerException;
@@ -13,18 +14,17 @@ import com.elemental_card_battle.elemental_card_battle.session.ActiveSessionMana
 import com.elemental_card_battle.elemental_card_battle.session.SessionStatus;
 import com.elemental_card_battle.elemental_card_battle.user.User;
 import com.elemental_card_battle.elemental_card_battle.user.UserService;
-import com.elemental_card_battle.elemental_card_battle.user.dto.UserProfileDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class RoomService {
 
@@ -33,6 +33,12 @@ public class RoomService {
     private final RoomMapper roomMapper;
     private final ActiveSessionManager activeSessionManager;
     private final UserService userService;
+
+    private static final AtomicLong BOT_ID_COUNTER = new AtomicLong(-1);
+
+    private Long generateBotId() {
+        return BOT_ID_COUNTER.decrementAndGet();
+    }
 
     private static final List<String> BOT_NAMES = List.of(
             "ShadowWarrior67", "VenomMenon", "IronPhantom", "DarkSerpent",
@@ -44,8 +50,6 @@ public class RoomService {
     private static final Random RANDOM = new Random();
 
 
-//    helper functions
-
     private ActiveSession getCurrentSession(String email) {
         ActiveSession session = activeSessionManager.getSessionByEmail(email);
         if (session == null) throw new IllegalArgumentException("No active session for:" + email);
@@ -54,8 +58,8 @@ public class RoomService {
 
     private void broadcastRooms() {
         List<RoomDto> rooms = lobby.getRooms().stream()
-                        .map(roomMapper :: roomToRoomDto)
-                                .toList();
+                .map(roomMapper::roomToRoomDto)
+                .toList();
         simpMessagingTemplate.convertAndSend("/topic/rooms", rooms);
     }
 
@@ -69,7 +73,10 @@ public class RoomService {
         }
     }
 
-//    ==========================================================================================
+
+    public Room findRoomByUserId(Long userId) {
+        return lobby.getRoomByUserId(userId);
+    }
 
     public List<RoomDto> findAllRooms() {
         return lobby.getRooms().stream()
@@ -96,15 +103,14 @@ public class RoomService {
         ActiveSession session = getCurrentSession(email);
         Room room = lobby.createPublicRoom(dto.name(), session);
         session.setStatus(SessionStatus.IN_ROOM);
-        session.setCurrentRoomId(room.getId());;
+        session.setCurrentRoomId(room.getId());
         broadcastRooms();
         return roomMapper.roomToRoomDto(room);
     }
 
-    public RoomDto createPrivateRoom(CreatePrivateRoomDto dto , String email) {
-
+    public RoomDto createPrivateRoom(CreatePrivateRoomDto dto, String email) {
         if (dto.password() == null || dto.password().isBlank()) {
-            throw new InvalidRoomPasswordException("");
+            throw new InvalidRoomPasswordException("Password is required for a private room");
         }
 
         ActiveSession session = getCurrentSession(email);
@@ -115,10 +121,15 @@ public class RoomService {
         return roomMapper.roomToRoomDto(room);
     }
 
-    public void leaveRoom (String email) {
+    public void leaveRoom(String email) {
         User user = userService.findUserByEmail(email);
         Room room = lobby.getRoomByUserId(user.getId());
-        room.getPlayers().removeIf(p -> p.getUserId() == user.getId());
+
+        if (room == null) {
+            throw new RoomNotFoundException("User is not currently in any room");
+        }
+
+        room.getPlayers().removeIf(p -> user.getId().equals(p.getUserId()));
         room.setFull(room.getPlayers().size() >= 2);
 
         ActiveSession session = activeSessionManager.getSessions(user.getId());
@@ -131,7 +142,7 @@ public class RoomService {
                 && room.getRoomOwner().getUserId().equals(user.getId());
 
         boolean onlyBotLeft = room.getPlayers().size() == 1
-                && room.getPlayers().get(0).getUserId() == null;
+                && room.getPlayers().get(0).getUserId() < 0;
 
         if (room.getPlayers().isEmpty() || onlyBotLeft) {
             lobby.removeRoom(room.getId());
@@ -147,10 +158,12 @@ public class RoomService {
         broadcastRoom(room.getId());
     }
 
-
-    public RoomDto joinRoom (JoinRoomDto joinRoomDto , String email) {
+    public RoomDto joinRoom(JoinRoomDto joinRoomDto, String email) {
         ActiveSession session = getCurrentSession(email);
         Room room = lobby.getRoom(joinRoomDto.roomId());
+
+        if (room == null) throw new RoomNotFoundException(joinRoomDto.roomId());
+        if (room.isFull()) throw new RoomFullException();
 
         if (room.isPrivate()) {
             if (joinRoomDto.password() == null || !joinRoomDto.password().equals(room.getPassword())) {
@@ -183,7 +196,7 @@ public class RoomService {
         }
 
         ActiveSession botSession = ActiveSession.builder()
-                .userId(null)
+                .userId(generateBotId())
                 .nickname(BOT_NAMES.get(RANDOM.nextInt(BOT_NAMES.size())))
                 .status(SessionStatus.IN_ROOM)
                 .currentRoomId(roomId)
@@ -194,10 +207,14 @@ public class RoomService {
         broadcastRooms();
         broadcastRoom(roomId);
 
+        simpMessagingTemplate.convertAndSend("/topic/room/" + roomId + "/chat",
+                new ChatMessageDto("System", null, "Bot " + botSession.getNickname() + " joined the lobby", System.currentTimeMillis(), roomId)
+        );
+
         return roomMapper.roomToRoomDto(room);
     }
 
-    public RoomDto kickBot(String roomId, String email) {
+    public RoomDto kickBot(String roomId, String email, Long botId) {
         ActiveSession activeSession = getCurrentSession(email);
         Room room = lobby.getRoom(roomId);
 
@@ -207,13 +224,16 @@ public class RoomService {
             throw new NotRoomOwnerException();
         }
 
-        room.getPlayers().removeIf(p -> p.getUserId() == null);
+        room.getPlayers().removeIf(p -> p.getUserId().equals(botId));
         room.setFull(room.getPlayers().size() >= 2);
 
         broadcastRooms();
         broadcastRoom(roomId);
 
+        simpMessagingTemplate.convertAndSend("/topic/room/" + roomId + "/chat",
+                new ChatMessageDto("System", null, "Bot left the lobby", System.currentTimeMillis(), roomId)
+        );
+
         return roomMapper.roomToRoomDto(room);
     }
-
 }

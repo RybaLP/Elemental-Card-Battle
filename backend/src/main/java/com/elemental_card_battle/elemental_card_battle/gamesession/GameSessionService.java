@@ -3,82 +3,143 @@ package com.elemental_card_battle.elemental_card_battle.gamesession;
 import com.elemental_card_battle.elemental_card_battle.card.CardService;
 import com.elemental_card_battle.elemental_card_battle.card.ElementalType;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardInstance;
-import com.elemental_card_battle.elemental_card_battle.dto.gamesession.CardPlayDto;
-import com.elemental_card_battle.elemental_card_battle.dto.gamesession.PlayRandomCardDto;
 import com.elemental_card_battle.elemental_card_battle.dto.gamesession.RoundResultDto;
-import com.elemental_card_battle.elemental_card_battle.exception.game.GameSessionNotFoundException;
-import com.elemental_card_battle.elemental_card_battle.manager.GameSessionManager;
-import com.elemental_card_battle.elemental_card_battle.model.*;
+import com.elemental_card_battle.elemental_card_battle.model.GameSession;
+import com.elemental_card_battle.elemental_card_battle.model.PlayerState;
+import com.elemental_card_battle.elemental_card_battle.model.WonRound;
 import com.elemental_card_battle.elemental_card_battle.roundicon.RoundIconService;
-import com.elemental_card_battle.elemental_card_battle.user.User;
-import com.elemental_card_battle.elemental_card_battle.user.UserService;
 import com.elemental_card_battle.elemental_card_battle.util.GameSessionBroadcaster;
 import com.elemental_card_battle.elemental_card_battle.util.TurnTimer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GameSessionService {
 
     private final GameSessionManager gameSessionManager;
     private final GameSessionBroadcaster gameSessionBroadcaster;
-    private final CardService cardService;
     private final RoundIconService roundIconService;
     private final TurnTimer turnTimer;
-    private final UserService userService;
+    private final CardService cardService;
 
-    public void playPlayerCard(CardPlayDto cardPlayDto) {
-        GameSession gameSession = gameSessionManager.getSessionById(cardPlayDto.sessionId());
-        if (gameSession == null) throw new GameSessionNotFoundException(cardPlayDto.sessionId());
+    public void playPlayerCard(Long userId, Integer instanceId) {
+        log.info("playPlayerCard called: userId={}, instanceId={}", userId, instanceId);
+
+        GameSession gameSession = gameSessionManager.findSessionByUserId(userId);
+
+        if (gameSession == null || gameSession.isOver()) {
+            log.warn("GameSession is null or over");
+            return;
+        }
+
+        PlayerState player = gameSession.getPlayerState(userId);
+        if (player.isHasPlayedThisTurn()) {
+            log.warn("Player {} already played this turn", player.getNickname());
+            return;
+        }
+
+        log.info("Player found: {}, hasPlayedThisTurn={}", player.getNickname(), player.isHasPlayedThisTurn());
+        log.info("Player hand size: {}", player.getCurrentHand().size());
+        player.getCurrentHand().forEach(c ->
+                log.info("Hand card: instanceId={}, name={}", c.instanceId(), c.name())
+        );
+
+        CardInstance card = player.getCurrentHand().stream()
+                .filter(c -> c.instanceId().equals(instanceId))
+                .findFirst()
+                .orElse(null);
+
+        if (card == null) {
+            log.warn("Card not found in hand. Looking for instanceId: {}", instanceId);
+            return;
+        }
+
+        log.info("Card found: {}", card.name());
+
+        player.setSelectedCard(card);
+        player.setHasPlayedThisTurn(true);
+
+        gameSessionBroadcaster.broadcastSelectCard(gameSession.getId(), userId, card);
 
         if (!gameSession.isTimerActive()) {
             gameSession.setTimerActive(true);
             gameSessionBroadcaster.broadcastStartCountdown(gameSession);
-            turnTimer.startTimer(gameSession, 7, () -> playRandomCard(new PlayRandomCardDto(gameSession.getId())));
+            turnTimer.startTimer(gameSession, 7, () -> playRandomCard(gameSession));
         }
 
-        boolean bothPlayed = gameSessionManager.playerPlayCard(cardPlayDto);
+        boolean bothPlayed = gameSession.getPlayer1().isHasPlayedThisTurn()
+                && gameSession.getPlayer2().isHasPlayedThisTurn();
+
+        log.info("Timer active: {}, both played: {}", gameSession.isTimerActive(), bothPlayed);
 
         if (bothPlayed) {
             resolveRound(gameSession);
-            gameSessionBroadcaster.broadcastGameUpdate(gameSession);
         }
     }
 
-    public void playRandomCard(PlayRandomCardDto playRandomCardDto) {
-        GameSession gameSession = gameSessionManager.getSessionById(playRandomCardDto.gameSessionId());
-
-        PlayerState p1 = gameSession.getPlayer1();
-        PlayerState p2 = gameSession.getPlayer2();
+    public void playRandomCard(GameSession gameSession) {
+        if (gameSession.isOver()) return;
+        PlayerState player = checkWhoDidntPlay(gameSession);
+        if (player == null) return;
+        List<CardInstance> hand = player.getCurrentHand();
+        if (hand.isEmpty()) return;
         Random random = new Random();
-
-        if (p1.getSelectedCard() == null) {
-            CardInstance card = drawRandomCard(p1, random);
-            gameSessionBroadcaster.broadcastRandomCard(gameSession, p1.getUserId(), card);
-        }
-
-        if (p2.getSelectedCard() == null) {
-            CardInstance card = drawRandomCard(p2, random);
-            gameSessionBroadcaster.broadcastRandomCard(gameSession, p2.getUserId(), card);
-        }
-
-        resolveRound(gameSession);
+        CardInstance randomCard = hand.get(random.nextInt(hand.size()));
+        playPlayerCard(player.getUserId(), randomCard.instanceId());
     }
 
-    private CardInstance drawRandomCard(PlayerState playerState, Random random) {
-        List<CardInstance> hand = playerState.getCurrentHand();
-        int randomIndex = random.nextInt(hand.size());
-        playerState.setSelectedCard(hand.get(randomIndex));
-        return playerState.getSelectedCard();
+    private PlayerState checkWhoDidntPlay(GameSession gameSession) {
+        if (!gameSession.getPlayer1().isHasPlayedThisTurn()) {
+            return gameSession.getPlayer1();
+        }
+        if (!gameSession.getPlayer2().isHasPlayedThisTurn()) {
+            return gameSession.getPlayer2();
+        }
+        return null;
+    }
+
+    private boolean hasPlayerWon(PlayerState playerState) {
+        List<WonRound> wonRounds = playerState.getWonRounds();
+
+        Map<String, Integer> fire = new HashMap<>();
+        Map<String, Integer> water = new HashMap<>();
+        Map<String, Integer> ice = new HashMap<>();
+
+        for (WonRound round : wonRounds) {
+            String color = round.getColor();
+            ElementalType elementType = round.getElementalType();
+            switch (elementType) {
+                case FIRE -> fire.put(color, fire.getOrDefault(color, 0) + 1);
+                case ICE -> ice.put(color, ice.getOrDefault(color, 0) + 1);
+                case WATER -> water.put(color, water.getOrDefault(color, 0) + 1);
+            }
+        }
+
+        if (fire.containsValue(3) || water.containsValue(3) || ice.containsValue(3)) {
+            return true;
+        }
+
+        for (String color : fire.keySet()) {
+            if (ice.containsKey(color) && water.containsKey(color)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private Long checkIfSomeoneWon(GameSession gameSession) {
+        if (hasPlayerWon(gameSession.getPlayer1())) return gameSession.getPlayer1().getUserId();
+        if (hasPlayerWon(gameSession.getPlayer2())) return gameSession.getPlayer2().getUserId();
+        return null;
     }
 
     public void resolveRound(GameSession gameSession) {
         gameSession.setTimerActive(false);
-        turnTimer.cancelTimer();
+        turnTimer.cancelTimer(gameSession);
         gameSessionBroadcaster.broadcastStopCountdown(gameSession);
 
         if (gameSession.isOver()) return;
@@ -88,27 +149,14 @@ public class GameSessionService {
 
         CardInstance p1Card = p1.getSelectedCard();
         CardInstance p2Card = p2.getSelectedCard();
-
         if (p1Card == null || p2Card == null) return;
 
-        Long roundWinner = getRoundWinner(p1Card, p2Card, p1.getUserId(), p2.getUserId());
+        Long winnerId = getRoundWinner(p1Card, p2Card, p1.getUserId(), p2.getUserId());
 
-        if (roundWinner != null && roundWinner.equals(p1.getUserId())) {
-            String imageUrl = roundIconService.getIconUrlByColorAndType(p1Card.color(), p1Card.elementalType());
-            p1.getWonRounds().add(WonRound.builder()
-                    .color(p1Card.color())
-                    .elementalType(p1Card.elementalType())
-                    .imageUrl(imageUrl)
-                    .build());
-        }
-
-        if (roundWinner != null && roundWinner.equals(p2.getUserId())) {
-            String imageUrl = roundIconService.getIconUrlByColorAndType(p2Card.color(), p2Card.elementalType());
-            p2.getWonRounds().add(WonRound.builder()
-                    .color(p2Card.color())
-                    .elementalType(p2Card.elementalType())
-                    .imageUrl(imageUrl)
-                    .build());
+        if (winnerId != null) {
+            PlayerState winner = winnerId.equals(p1.getUserId()) ? p1 : p2;
+            CardInstance winningCard = winnerId.equals(p1.getUserId()) ? p1Card : p2Card;
+            winner.getWonRounds().add(createWonRound(winningCard));
         }
 
         p1.getCurrentHand().remove(p1Card);
@@ -116,13 +164,50 @@ public class GameSessionService {
         p1.getCurrentHand().add(cardService.generateRandomCard());
         p2.getCurrentHand().add(cardService.generateRandomCard());
 
-        p1.setSelectedCard(null);
-        p1.setHasPlayedThisTurn(false);
-        p2.setSelectedCard(null);
-        p2.setHasPlayedThisTurn(false);
+        resetPlayerTurnState(p1);
+        resetPlayerTurnState(p2);
 
-        RoundResultDto roundResultDto = new RoundResultDto(
-                roundWinner,
+        sendRoundResult(gameSession, winnerId, p1Card, p2Card);
+
+        Long gameWinnerId = checkIfSomeoneWon(gameSession);
+        if (gameWinnerId != null) {
+            String winnerNickname = gameSession.getPlayerState(gameWinnerId).getNickname();
+            handleGameOver(gameSession, gameWinnerId, winnerNickname);
+        }
+    }
+
+    private Long getRoundWinner(CardInstance p1Card, CardInstance p2Card, Long p1Id, Long p2Id) {
+        if (p1Card.elementalType().equals(p2Card.elementalType())) {
+            if (p1Card.power() > p2Card.power()) return p1Id;
+            if (p2Card.power() > p1Card.power()) return p2Id;
+            return null;
+        }
+        boolean p1Wins = (p1Card.elementalType() == ElementalType.FIRE && p2Card.elementalType() == ElementalType.ICE) ||
+                (p1Card.elementalType() == ElementalType.WATER && p2Card.elementalType() == ElementalType.FIRE) ||
+                (p1Card.elementalType() == ElementalType.ICE && p2Card.elementalType() == ElementalType.WATER);
+        return p1Wins ? p1Id : p2Id;
+    }
+
+    private void resetPlayerTurnState(PlayerState player) {
+        player.setSelectedCard(null);
+        player.setHasPlayedThisTurn(false);
+    }
+
+    private WonRound createWonRound(CardInstance card) {
+        String imageUrl = roundIconService.getIconUrlByColorAndType(card.color(), card.elementalType());
+        return WonRound.builder()
+                .color(card.color())
+                .elementalType(card.elementalType())
+                .imageUrl(imageUrl)
+                .build();
+    }
+
+    private void sendRoundResult(GameSession gameSession, Long winnerId, CardInstance p1Card, CardInstance p2Card) {
+        PlayerState p1 = gameSession.getPlayer1();
+        PlayerState p2 = gameSession.getPlayer2();
+
+        RoundResultDto dto = new RoundResultDto(
+                winnerId,
                 p1.getUserId(),
                 p2.getUserId(),
                 p1.getWonRounds(),
@@ -133,96 +218,14 @@ public class GameSessionService {
                 p2.getCurrentHand()
         );
 
-        gameSessionBroadcaster.broadcastRoundWinner(gameSession.getId(), roundResultDto);
-
-        Long gameWinnerId = checkIfSomeoneWon(gameSession);
-
-        if (gameWinnerId != null) {
-            gameSession.setWinnerId(gameWinnerId);
-            Long loserId = gameWinnerId.equals(p1.getUserId()) ? p2.getUserId() : p1.getUserId();
-            String winnerNickname = gameWinnerId.equals(p1.getUserId()) ? p1.getNickname() : p2.getNickname();
-
-            handleGameOver(gameWinnerId, loserId);
-            gameSessionBroadcaster.broadcastGameOver(gameSession, winnerNickname);
-            gameSession.setOver(true);
-        }
+        gameSessionBroadcaster.broadcastRoundWinner(gameSession.getId(), dto);
     }
 
-    @Transactional
-    protected void handleGameOver(Long winnerId, Long loserId) {
-        int reward = new Random().nextInt(21) + 10;
-
-        if (winnerId > 0) {
-            User winner = userService.findUserById(winnerId);
-            winner.setGamesWon(winner.getGamesWon() + 1);
-            winner.setCurrency(winner.getCurrency() + reward);
-        }
-
-        if (loserId > 0) {
-            User loser = userService.findUserById(loserId);
-            loser.setGamesLost(loser.getGamesLost() + 1);
-        }
-
-    }
-
-    private Long getRoundWinner(CardInstance p1Card, CardInstance p2Card, Long p1Id, Long p2Id) {
-        if (p1Card.elementalType().equals(p2Card.elementalType())) {
-            if (p1Card.power() > p2Card.power()) return p1Id;
-            if (p2Card.power() > p1Card.power()) return p2Id;
-            return null;
-        }
-
-        if (p1Card.elementalType().equals(ElementalType.FIRE) && p2Card.elementalType().equals(ElementalType.ICE)
-                || p1Card.elementalType().equals(ElementalType.WATER) && p2Card.elementalType().equals(ElementalType.FIRE)
-                || p1Card.elementalType().equals(ElementalType.ICE) && p2Card.elementalType().equals(ElementalType.WATER)) {
-            return p1Id;
-        } else {
-            return p2Id;
-        }
-    }
-
-    private Long checkIfSomeoneWon(GameSession gameSession) {
-        PlayerState p1 = gameSession.getPlayer1();
-        PlayerState p2 = gameSession.getPlayer2();
-
-        if (hasPlayerWon(p1)) return p1.getUserId();
-        if (hasPlayerWon(p2)) return p2.getUserId();
-
-        return null;
-    }
-
-    private boolean hasPlayerWon(PlayerState playerState) {
-        List<WonRound> rounds = playerState.getWonRounds();
-
-        Map<String, Integer> fireCounts = new HashMap<>();
-        Map<String, Integer> iceCounts = new HashMap<>();
-        Map<String, Integer> waterCounts = new HashMap<>();
-
-        for (WonRound round : rounds) {
-            String color = round.getColor();
-            ElementalType elementalType = round.getElementalType();
-
-            if (elementalType.equals(ElementalType.ICE)) {
-                iceCounts.put(color, iceCounts.getOrDefault(color, 0) + 1);
-            }
-            if (elementalType.equals(ElementalType.FIRE)) {
-                fireCounts.put(color, fireCounts.getOrDefault(color, 0) + 1);
-            }
-            if (elementalType.equals(ElementalType.WATER)) {
-                waterCounts.put(color, waterCounts.getOrDefault(color, 0) + 1);
-            }
-        }
-
-        if (fireCounts.containsValue(3) || waterCounts.containsValue(3) || iceCounts.containsValue(3)) {
-            return true;
-        }
-
-        for (String color : fireCounts.keySet()) {
-            if (iceCounts.containsKey(color) && waterCounts.containsKey(color)) {
-                return true;
-            }
-        }
-
-        return false;
+    private void handleGameOver(GameSession gameSession, Long winnerId, String winnerNickname) {
+        gameSession.setOver(true);
+        gameSession.setWinnerId(winnerId);
+        turnTimer.cancelTimer(gameSession);
+        gameSessionBroadcaster.broadcastGameOver(gameSession, winnerNickname);
+        gameSessionManager.killSession(gameSession.getId());
     }
 }

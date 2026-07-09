@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -17,7 +18,9 @@ import java.util.stream.IntStream;
 public class CardService {
 
     private final CardRepository cardRepository;
-    private final UserCardRepository userCardRepository;
+    private final UserCardService userCardService;
+
+    private final AtomicInteger instanceIdCounter = new AtomicInteger(1);
 
     public Card findCardById (Long id) {
         return cardRepository.findById(id)
@@ -33,17 +36,21 @@ public class CardService {
     }
 
     public List<Card> getOwnedCards (String username){
-        return userCardRepository.findCardsByEmail(username);
+        return userCardService.getOwnedCards(username);
     }
 
-    public List<CardInstance> generateInitialHand() {
-        List<Card> allCards = cardRepository.findAll();
-        Random random = new Random();
+    public List<CardInstance> generateInitialHand(Long userId) {
+        List<Card> cards = userId < 0
+                ? cardRepository.findAll()
+                : userCardService.getOwnedCardsByUserId(userId);
 
+        if (cards.isEmpty()) throw new IllegalStateException("No cards available for userId: " + userId);
+
+        Random random = new Random();
         return IntStream.range(0, 4)
-                .mapToObj(i -> allCards.get(random.nextInt(allCards.size())))
+                .mapToObj(i -> cards.get(random.nextInt(cards.size())))
                 .map(card -> new CardInstance(
-                        UUID.randomUUID().toString(),
+                        instanceIdCounter.getAndIncrement(),
                         card.getId(),
                         card.getPower(),
                         card.getName(),
@@ -58,7 +65,7 @@ public class CardService {
         Card card = allCards.get((int)(Math.random() * allCards.size()));
 
         return new CardInstance(
-                UUID.randomUUID().toString(),
+                instanceIdCounter.getAndIncrement(),
                 card.getId(),
                 card.getPower(),
                 card.getName(),

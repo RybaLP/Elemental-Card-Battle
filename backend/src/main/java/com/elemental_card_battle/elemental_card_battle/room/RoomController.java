@@ -1,6 +1,7 @@
 package com.elemental_card_battle.elemental_card_battle.room;
 
 import com.elemental_card_battle.elemental_card_battle.dto.room.*;
+import com.elemental_card_battle.elemental_card_battle.model.GameSession;
 import com.elemental_card_battle.elemental_card_battle.room.dto.RoomIdDto;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -80,13 +81,6 @@ public class RoomController {
     public ResponseEntity<RoomDto> addBot (@AuthenticationPrincipal UserDetails userDetails, @RequestBody RoomIdDto roomIdDto) {
         String email = userDetails.getUsername();
         RoomDto roomDto = roomService.addBot(roomIdDto.roomId(), email);
-        return ResponseEntity.ok(roomDto);
-    }
-
-    @PostMapping("/kick-bot")
-    public ResponseEntity<RoomDto> kickBot (@AuthenticationPrincipal UserDetails userDetails, @RequestBody RoomIdDto roomIdDto) {
-        String email = userDetails.getUsername();
-        RoomDto roomDto = roomService.kickBot(roomIdDto.roomId(), email);
         return ResponseEntity.ok(roomDto);
     }
 

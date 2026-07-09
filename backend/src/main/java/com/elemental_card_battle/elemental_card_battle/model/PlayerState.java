@@ -10,8 +10,8 @@ import java.util.List;
 @Data
 @Builder
 public class PlayerState {
-
-    String playerId;
+    private Long userId;
+    private String nickname;
 
     @Builder.Default
     private List<CardInstance> currentHand = new ArrayList<>();

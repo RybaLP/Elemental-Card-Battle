@@ -6,11 +6,13 @@ import com.elemental_card_battle.elemental_card_battle.exception.card.UserAlread
 import com.elemental_card_battle.elemental_card_battle.exception.game.GameSessionNotFoundException;
 import com.elemental_card_battle.elemental_card_battle.exception.player.InvalidPlayerNicknameException;
 import com.elemental_card_battle.elemental_card_battle.exception.player.PlayerNotFoundException;
+import com.elemental_card_battle.elemental_card_battle.exception.room.InvalidRoomPasswordException;
 import com.elemental_card_battle.elemental_card_battle.exception.room.NotRoomOwnerException;
 import com.elemental_card_battle.elemental_card_battle.exception.room.RoomFullException;
 import com.elemental_card_battle.elemental_card_battle.exception.room.RoomNotFoundException;
 import com.elemental_card_battle.elemental_card_battle.exception.user.UserHasNotEnoughBalance;
 import com.elemental_card_battle.elemental_card_battle.exception.user.UserNotFoundException;
+import org.mapstruct.util.Experimental;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

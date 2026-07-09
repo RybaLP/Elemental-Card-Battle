@@ -1,5 +1,6 @@
 package com.elemental_card_battle.elemental_card_battle.session;
 
+import com.elemental_card_battle.elemental_card_battle.exception.gamesession.SessionNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -44,7 +45,7 @@ public class ActiveSessionManager {
         return sessions.values().stream()
                 .filter(s -> email.equals(s.getEmail()))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(SessionNotFoundException::new);
     }
 
     public void removeSessionBySimpSessionId (String sessionId) {

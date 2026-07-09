@@ -54,7 +54,7 @@ public class Lobby {
     public Room getRoomByUserId(Long userId) {
         return rooms.values().stream()
                 .filter(room -> room.getPlayers().stream()
-                        .anyMatch(s -> s.getUserId().equals(userId)))
+                        .anyMatch(s -> s.getUserId() != null && s.getUserId().equals(userId)))
                 .findFirst()
                 .orElse(null);
     }

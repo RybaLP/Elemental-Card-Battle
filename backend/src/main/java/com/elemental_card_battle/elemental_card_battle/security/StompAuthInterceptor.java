@@ -38,20 +38,23 @@ public class StompAuthInterceptor implements ChannelInterceptor {
 
             String token = authHeader.substring(7);
             Long userId = jwtService.extractUserId(token);
-            String nickname = jwtService.extractNickname(token);
+            String nickname = jwtService.extractClaim(token, claims -> claims.get("username", String.class));
             String simpSessionId = accessor.getSessionId();
             String email = jwtService.extractUsername(token);
 
+            accessor.getSessionAttributes().put("email", email);
+
             ActiveSession session = ActiveSession.builder()
                     .userId(userId)
-                    .nickname(nickname)
                     .email(email)
+                    .nickname(nickname)
                     .simpSessionId(simpSessionId)
                     .status(SessionStatus.ONLINE)
                     .currentRoomId(null)
+                    .currentGameSessionId(null)
                     .build();
 
-            log.info("STOMP CONNECT - creating session for userId: {}, email: {}", userId, email);
+            log.info("STOMP CONNECT - creating session for userId: {}, email: {} nickname {}", userId, email, nickname);
             activeSessionManager.registerSessions(session);
         }
 
