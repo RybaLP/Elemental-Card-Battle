@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useGameSessionStore } from "@/store/useGameSessionStore";
 import { useAudioStore } from "@/store/useAudioStore";
 import { playCardPick } from "../../helper/cardAudioManager";
-import { useStomp } from "./stompContext";
+import { useStomp } from "../ws/stompContext";
 
 export const useGameSessionWS = (sessionId: string, userId: number) => {
     const { client, connected } = useStomp();
@@ -33,13 +33,13 @@ export const useGameSessionWS = (sessionId: string, userId: number) => {
                 const store = useGameSessionStore.getState();
                 const audioStore = useAudioStore.getState();
 
-                const isPlayer1 = body.p1Id === userId;
                 store.setIsRevealing(true);
                 setTimeout(() => {
                     audioStore.setPlayResolveRound(true);
-                    store.setMyWonRounds(isPlayer1 ? body.p1Rounds : body.p2Rounds);
-                    store.setEnemyWonRounds(isPlayer1 ? body.p2Rounds : body.p1Rounds);
-                    store.resetTurn(isPlayer1 ? body.p1Cards : body.p2Cards);
+                    const isP1 = body.p1Id === userId;
+                    store.setMyWonRounds(isP1 ? body.p1Rounds : body.p2Rounds);
+                    store.setEnemyWonRounds(isP1 ? body.p2Rounds : body.p1Rounds);
+                    store.resetTurn(isP1 ? body.p1Cards : body.p2Cards);
                 }, 2500);
             }),
 
@@ -55,7 +55,7 @@ export const useGameSessionWS = (sessionId: string, userId: number) => {
                 const store = useGameSessionStore.getState();
                 const audioStore = useAudioStore.getState();
                 if (body.event === "randomCard") {
-                    if (store.myPlayer?.userId === body.userId) {
+                    if (body.userId === userId) {
                         store.setSelectedCard(body.card);
                         playCardPick();
                     } else {

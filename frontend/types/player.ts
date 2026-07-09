@@ -4,5 +4,4 @@ export interface Player {
     currency: number;
     gamesWon: number;
     gamesLost: number;
-    isBot: boolean; 
 }

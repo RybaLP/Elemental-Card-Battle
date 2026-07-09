@@ -12,8 +12,7 @@ export const usePlayerStore = create<PlayerStore>((set) => ({
         nickname: "",
         currency: 0,
         gamesWon: 0,
-        gamesLost: 0,
-        isBot: false,
+        gamesLost: 0
     },
     setPlayer: (player) => set({ player }),
 }));

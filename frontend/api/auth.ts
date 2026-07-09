@@ -43,3 +43,25 @@ export const getProfile = async () => {
     const res = await privateClient.get("/users");
     return res.data;
 }
+
+export const getUserIdFromToken = (): number | null => {
+    const token = getToken();
+    if (!token) return null;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.userId ?? null;
+    } catch {
+        return null;
+    }
+};
+
+export const getNicknameFromToken = (): string | null => {
+    const token = getToken();
+    if (!token) return null;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.nickname ?? null;
+    } catch {
+        return null;
+    }
+};

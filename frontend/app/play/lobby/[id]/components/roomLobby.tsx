@@ -32,7 +32,6 @@ const RoomLobby = () => {
             currency: userData.currency,
             gamesWon: userData.gamesWon,
             gamesLost: userData.gamesLost,
-            isBot: false,
           });
         } catch (err) {
           console.error("Nie udało się pobrać profilu użytkownika:", err);
@@ -85,7 +84,7 @@ const RoomLobby = () => {
   const guest = currentRoom.players[1];
 
   const isOwner = userId !== null && currentRoom.roomOwnerId === userId;
-  const guestIsBot = guest?.isBot ?? false;
+  const guestIsBot = guest ? (guest.userId !== null && guest.userId < 0) : false;
   const roomIsFull = currentRoom.players.length >= 2;
 
   const handleLeaveRoom = async () => {
@@ -114,10 +113,10 @@ const RoomLobby = () => {
   };
 
   const handleKickBot = async () => {
-    if (botActionLoading) return;
+    if (botActionLoading || !guest || !guestIsBot || guest.userId === null) return;
     setBotActionLoading(true);
     try {
-      const updatedRoom = await kickBot(currentRoom.id);
+      const updatedRoom = await kickBot(currentRoom.id, guest.userId);
       setCurrentRoom(updatedRoom);
     } catch (error) {
       console.error("Failed to kick bot:", error);
@@ -138,7 +137,6 @@ const RoomLobby = () => {
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-900 to-black p-6">
       <div className="max-w-6xl mx-auto">
-
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-linear-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent mb-2">
             {currentRoom.name}
@@ -155,7 +153,6 @@ const RoomLobby = () => {
         </div>
 
         <div className="flex gap-8 items-start">
-
           <div className="flex-1 max-w-md">
             <div className="text-center mb-4">
               <span className="text-purple-400 font-semibold text-lg">Owner</span>
@@ -226,7 +223,6 @@ const RoomLobby = () => {
             </button>
           )}
         </div>
-
       </div>
     </div>
   );

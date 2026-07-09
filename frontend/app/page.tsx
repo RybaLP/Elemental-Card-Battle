@@ -6,7 +6,6 @@ export default function Home() {
   return (
     <main className="relative min-h-screen">
 
-
       <AnimatedBackground />
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen text-white px-4">

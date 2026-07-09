@@ -40,7 +40,7 @@ export const addBot = async (roomId: string): Promise<Room> => {
     return res.data;
 };
 
-export const kickBot = async (roomId: string): Promise<Room> => {
-    const res = await privateClient.post("/rooms/kick-bot", { roomId });
+export const kickBot = async (roomId: string, botId: number | null): Promise<Room> => {
+    const res = await privateClient.post(`/rooms/${roomId}/kick-bot`, { botId });
     return res.data;
 };
