@@ -2,10 +2,7 @@ package com.elemental_card_battle.elemental_card_battle.room;
 
 import com.elemental_card_battle.elemental_card_battle.chatmessage.dto.ChatMessageDto;
 import com.elemental_card_battle.elemental_card_battle.dto.room.*;
-import com.elemental_card_battle.elemental_card_battle.exception.room.InvalidRoomPasswordException;
-import com.elemental_card_battle.elemental_card_battle.exception.room.NotRoomOwnerException;
-import com.elemental_card_battle.elemental_card_battle.exception.room.RoomFullException;
-import com.elemental_card_battle.elemental_card_battle.exception.room.RoomNotFoundException;
+import com.elemental_card_battle.elemental_card_battle.exception.room.*;
 import com.elemental_card_battle.elemental_card_battle.manager.Lobby;
 import com.elemental_card_battle.elemental_card_battle.mapper.RoomMapper;
 import com.elemental_card_battle.elemental_card_battle.model.Room;
@@ -49,7 +46,6 @@ public class RoomService {
 
     private static final Random RANDOM = new Random();
 
-
     private ActiveSession getCurrentSession(String email) {
         ActiveSession session = activeSessionManager.getSessionByEmail(email);
         if (session == null) throw new IllegalArgumentException("No active session for:" + email);
@@ -72,7 +68,6 @@ public class RoomService {
             );
         }
     }
-
 
     public Room findRoomByUserId(Long userId) {
         return lobby.getRoomByUserId(userId);
@@ -181,10 +176,13 @@ public class RoomService {
         return roomMapper.roomToRoomDto(room);
     }
 
-    public RoomDto addBot(String roomId, String email) {
+    public RoomDto addBot(String email) {
         ActiveSession activeSession = getCurrentSession(email);
+        String roomId = activeSession.getCurrentRoomId();
+        if (roomId == null) {
+            throw new IllegalStateException("You are not in a room");
+        }
         Room room = lobby.getRoom(roomId);
-
         if (room == null) throw new RoomNotFoundException(roomId);
 
         if (!room.getRoomOwner().getUserId().equals(activeSession.getUserId())) {
@@ -214,25 +212,75 @@ public class RoomService {
         return roomMapper.roomToRoomDto(room);
     }
 
-    public RoomDto kickBot(String roomId, String email, Long botId) {
+    public RoomDto kickBot(String email) {
         ActiveSession activeSession = getCurrentSession(email);
+        String roomId = activeSession.getCurrentRoomId();
+        if (roomId == null) {
+            throw new IllegalStateException("You are not in a room");
+        }
+        Long userId = activeSession.getUserId();
         Room room = lobby.getRoom(roomId);
-
         if (room == null) throw new RoomNotFoundException(roomId);
 
-        if (!room.getRoomOwner().getUserId().equals(activeSession.getUserId())) {
+        if (!room.getRoomOwner().getUserId().equals(userId)) {
             throw new NotRoomOwnerException();
         }
 
-        room.getPlayers().removeIf(p -> p.getUserId().equals(botId));
+        room.getPlayers().stream()
+                .filter(p -> p.getUserId() < 0)
+                .findFirst()
+                .ifPresent(bot -> {
+                    room.getPlayers().remove(bot);
+                    room.setFull(room.getPlayers().size() >= 2);
+
+                    broadcastRooms();
+                    broadcastRoom(room.getId());
+
+                    simpMessagingTemplate.convertAndSend("/topic/room/" + room.getId() + "/chat",
+                            new ChatMessageDto("System", null, "Bot left the lobby", System.currentTimeMillis(), room.getId())
+                    );
+                });
+
+        return roomMapper.roomToRoomDto(room);
+    }
+
+    public RoomDto kickPlayer(String email) {
+        ActiveSession owner = getCurrentSession(email);
+        String roomId = owner.getCurrentRoomId();
+        if (roomId == null) {
+            throw new IllegalStateException("You are not in a room");
+        }
+
+        Room room = lobby.getRoom(roomId);
+        if (room == null) {
+            throw new RoomNotFoundException("Room not found for session");
+        }
+
+        if (!room.getRoomOwner().getUserId().equals(owner.getUserId())) {
+            throw new NotRoomOwnerException();
+        }
+
+        ActiveSession playerToKick = room.getPlayers().stream()
+                .filter(p -> !p.getUserId().equals(owner.getUserId()))
+                .filter(p -> p.getUserId() >= 0)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No human player to kick"));
+
+        room.getPlayers().remove(playerToKick);
         room.setFull(room.getPlayers().size() >= 2);
 
-        broadcastRooms();
-        broadcastRoom(roomId);
+        ActiveSession kickedSession = activeSessionManager.getSessions(playerToKick.getUserId());
+        if (kickedSession != null) {
+            kickedSession.setStatus(SessionStatus.ONLINE);
+            kickedSession.setCurrentRoomId(null);
+        }
 
-        simpMessagingTemplate.convertAndSend("/topic/room/" + roomId + "/chat",
-                new ChatMessageDto("System", null, "Bot left the lobby", System.currentTimeMillis(), roomId)
-        );
+        broadcastRooms();
+        broadcastRoom(room.getId());
+
+        simpMessagingTemplate.convertAndSend("/topic/room/" + room.getId() + "/chat",
+                new ChatMessageDto("System", null, playerToKick.getNickname() + " was kicked from the lobby",
+                        System.currentTimeMillis(), room.getId()));
 
         return roomMapper.roomToRoomDto(room);
     }

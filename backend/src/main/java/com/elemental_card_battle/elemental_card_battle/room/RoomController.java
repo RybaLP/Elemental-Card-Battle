@@ -1,8 +1,6 @@
 package com.elemental_card_battle.elemental_card_battle.room;
 
 import com.elemental_card_battle.elemental_card_battle.dto.room.*;
-import com.elemental_card_battle.elemental_card_battle.model.GameSession;
-import com.elemental_card_battle.elemental_card_battle.room.dto.RoomIdDto;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -78,10 +76,23 @@ public class RoomController {
     }
 
     @PostMapping("/add-bot")
-    public ResponseEntity<RoomDto> addBot (@AuthenticationPrincipal UserDetails userDetails, @RequestBody RoomIdDto roomIdDto) {
+    public ResponseEntity<RoomDto> addBot (@AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername();
-        RoomDto roomDto = roomService.addBot(roomIdDto.roomId(), email);
+        RoomDto roomDto = roomService.addBot(email);
         return ResponseEntity.ok(roomDto);
+    }
+
+    @PostMapping("/kick-bot")
+    public ResponseEntity<RoomDto> kickBot (@AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        RoomDto roomDto = roomService.kickBot(email);
+        return ResponseEntity.ok(roomDto);
+    }
+
+    @PostMapping("/kick-player")
+    public ResponseEntity<RoomDto> kickPlayer(@AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        return ResponseEntity.ok(roomService.kickPlayer(email));
     }
 
 }

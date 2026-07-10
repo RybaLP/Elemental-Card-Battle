@@ -8,6 +8,7 @@ import com.elemental_card_battle.elemental_card_battle.model.GameSession;
 import com.elemental_card_battle.elemental_card_battle.model.PlayerState;
 import com.elemental_card_battle.elemental_card_battle.model.WonRound;
 import com.elemental_card_battle.elemental_card_battle.roundicon.RoundIconService;
+import com.elemental_card_battle.elemental_card_battle.user.UserService;
 import com.elemental_card_battle.elemental_card_battle.util.GameSessionBroadcaster;
 import com.elemental_card_battle.elemental_card_battle.util.TurnTimer;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class GameSessionService {
     private final RoundIconService roundIconService;
     private final TurnTimer turnTimer;
     private final CardService cardService;
+    private final UserService userService;
 
     public void playPlayerCard(Long userId, Integer instanceId) {
         log.info("playPlayerCard called: userId={}, instanceId={}", userId, instanceId);
@@ -131,6 +133,7 @@ public class GameSessionService {
         }
         return false;
     }
+
     private Long checkIfSomeoneWon(GameSession gameSession) {
         if (hasPlayerWon(gameSession.getPlayer1())) return gameSession.getPlayer1().getUserId();
         if (hasPlayerWon(gameSession.getPlayer2())) return gameSession.getPlayer2().getUserId();
@@ -225,6 +228,14 @@ public class GameSessionService {
         gameSession.setOver(true);
         gameSession.setWinnerId(winnerId);
         turnTimer.cancelTimer(gameSession);
+
+        Long loserId = winnerId.equals(gameSession.getPlayer1().getUserId())
+                ? gameSession.getPlayer2().getUserId()
+                : gameSession.getPlayer1().getUserId();
+
+        userService.updateStats(winnerId, true);
+        userService.updateStats(loserId, false);
+
         gameSessionBroadcaster.broadcastGameOver(gameSession, winnerNickname);
         gameSessionManager.killSession(gameSession.getId());
     }
