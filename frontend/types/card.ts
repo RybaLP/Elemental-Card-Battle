@@ -1,5 +1,5 @@
 export interface Card {
-  instanceId: string;  
+  instanceId: number;  
   id: number;
   power: number;
   name: string;

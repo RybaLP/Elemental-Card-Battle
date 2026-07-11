@@ -7,7 +7,7 @@ import ChatBox from "./chatBox";
 import { useCurrentRoomStore } from "@/store/useCurrentRoomStore";
 import { useRoomWS } from "@/lib/ws/useRoomWS";
 import { usePlayerStore } from "@/store/usePlayerStore";
-import { leaveRoom, addBot, kickBot, getCurrentRoom } from "@/api/room";
+import { leaveRoom, addBot, kickBot, kickPlayer, getCurrentRoom } from "@/api/room";
 import { startGame } from "@/api/gameSession";
 import { getProfile } from "@/api/auth";
 
@@ -18,9 +18,11 @@ const RoomLobby = () => {
 
   const [userId, setUserId] = useState<number | null>(null);
   const [botActionLoading, setBotActionLoading] = useState(false);
+  const [gameStarting, setGameStarting] = useState(false);
 
   const isLeavingRef = useRef(false);
 
+  // Fetch user profile if not already loaded
   useEffect(() => {
     const fetchUserIfNeeded = async () => {
       if (!player || player.id === 0) {
@@ -34,14 +36,15 @@ const RoomLobby = () => {
             gamesLost: userData.gamesLost,
           });
         } catch (err) {
-          console.error("Nie udało się pobrać profilu użytkownika:", err);
+          console.error("Failed to fetch user profile:", err);
           router.push("/login");
         }
       }
     };
     fetchUserIfNeeded();
-  }, [player?.id, setPlayer, router]);
+  }, [player, setPlayer, router]);
 
+  // Restore room session if missing
   useEffect(() => {
     if (!currentRoom && !isLeavingRef.current) {
       const restoreRoomSession = async () => {
@@ -61,14 +64,17 @@ const RoomLobby = () => {
     }
   }, [currentRoom, setCurrentRoom, router]);
 
+  // Set userId from player data
   useEffect(() => {
     if (player && player.id !== 0) {
       setUserId(player.id);
     }
   }, [player]);
 
+  // WebSocket sync for room
   useRoomWS(currentRoom?.id ?? "", setCurrentRoom);
 
+  // Loading screen
   if (!currentRoom || !player || player.id === 0) {
     return (
       <div className="min-h-screen bg-linear-to-br from-gray-900 to-black flex items-center justify-center">
@@ -84,9 +90,10 @@ const RoomLobby = () => {
   const guest = currentRoom.players[1];
 
   const isOwner = userId !== null && currentRoom.roomOwnerId === userId;
-  const guestIsBot = guest ? (guest.userId !== null && guest.userId < 0) : false;
+  const guestIsBot = guest ? guest.userId !== null && guest.userId < 0 : false;
   const roomIsFull = currentRoom.players.length >= 2;
 
+  // Leave the room
   const handleLeaveRoom = async () => {
     try {
       isLeavingRef.current = true;
@@ -99,11 +106,12 @@ const RoomLobby = () => {
     }
   };
 
+  // Add bot
   const handleAddBot = async () => {
     if (botActionLoading) return;
     setBotActionLoading(true);
     try {
-      const updatedRoom = await addBot(currentRoom.id);
+      const updatedRoom = await addBot();
       setCurrentRoom(updatedRoom);
     } catch (error) {
       console.error("Failed to add bot:", error);
@@ -112,11 +120,12 @@ const RoomLobby = () => {
     }
   };
 
+  // Kick bot
   const handleKickBot = async () => {
-    if (botActionLoading || !guest || !guestIsBot || guest.userId === null) return;
+    if (botActionLoading || !guestIsBot) return;
     setBotActionLoading(true);
     try {
-      const updatedRoom = await kickBot(currentRoom.id, guest.userId);
+      const updatedRoom = await kickBot();
       setCurrentRoom(updatedRoom);
     } catch (error) {
       console.error("Failed to kick bot:", error);
@@ -125,12 +134,30 @@ const RoomLobby = () => {
     }
   };
 
+  // Kick human player
+  const handleKickPlayer = async () => {
+    if (botActionLoading || guestIsBot) return;
+    setBotActionLoading(true);
+    try {
+      const updatedRoom = await kickPlayer();
+      setCurrentRoom(updatedRoom);
+    } catch (error) {
+      console.error("Failed to kick player:", error);
+    } finally {
+      setBotActionLoading(false);
+    }
+  };
+
+  // Start game
   const handleStartGame = async () => {
+    if (gameStarting) return;
+    setGameStarting(true);
     try {
       const session = await startGame(currentRoom.id);
       router.push(`/play/game/${session.id}`);
     } catch (error) {
       console.error("Failed to start game:", error);
+      setGameStarting(false);
     }
   };
 
@@ -141,18 +168,18 @@ const RoomLobby = () => {
           <h1 className="text-4xl font-bold bg-linear-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent mb-2">
             {currentRoom.name}
           </h1>
-          <p className="text-gray-400 text-xs">ID: {currentRoom.id}</p>
           <div className="flex justify-center items-center gap-4 mt-2 text-sm text-gray-500">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               {currentRoom.players.length}/2 players
             </div>
-            <span>•</span>
+            <span>-</span>
             <div>{roomIsFull ? "Ready to battle!" : "Waiting for player..."}</div>
           </div>
         </div>
 
         <div className="flex gap-8 items-start">
+          {/* Owner */}
           <div className="flex-1 max-w-md">
             <div className="text-center mb-4">
               <span className="text-purple-400 font-semibold text-lg">Owner</span>
@@ -160,10 +187,12 @@ const RoomLobby = () => {
             {owner && <PlayerSlot player={owner} />}
           </div>
 
+          {/* ChatBox */}
           <div className="flex-1 max-w-2xl">
             <ChatBox />
           </div>
 
+          {/* Guest */}
           <div className="flex-1 max-w-md">
             <div className="text-center mb-4">
               <span className="text-blue-400 font-semibold text-lg">Guest</span>
@@ -172,22 +201,35 @@ const RoomLobby = () => {
             {guest ? (
               <div className="flex flex-col items-center gap-3">
                 <PlayerSlot player={guest} />
-                {isOwner && guestIsBot && (
-                  <button
-                    onClick={handleKickBot}
-                    disabled={botActionLoading}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm
-                               transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {botActionLoading ? "Removing…" : "Kick Bot"}
-                  </button>
+                {isOwner && (
+                  <>
+                    {guestIsBot ? (
+                      <button
+                        onClick={handleKickBot}
+                        disabled={botActionLoading}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm
+                                   transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {botActionLoading ? "Removing..." : "Kick Bot"}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleKickPlayer}
+                        disabled={botActionLoading}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm
+                                   transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {botActionLoading ? "Removing..." : "Kick Player"}
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-full h-[200px] bg-gray-800/50 border-2 border-dashed border-gray-600 rounded-2xl flex items-center justify-center">
                   <div className="text-center text-gray-500">
-                    <div className="text-4xl mb-2">👤</div>
+                    <div className="text-4xl mb-2">+</div>
                     <p>Waiting for player...</p>
                   </div>
                 </div>
@@ -198,7 +240,7 @@ const RoomLobby = () => {
                     className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm
                                transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {botActionLoading ? "Adding…" : "Add Bot"}
+                    {botActionLoading ? "Adding..." : "Add Bot"}
                   </button>
                 )}
               </div>
@@ -218,8 +260,9 @@ const RoomLobby = () => {
             <button
               className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-full shadow-lg shadow-purple-500/20 transition-all cursor-pointer"
               onClick={handleStartGame}
+              disabled={gameStarting}
             >
-              Start Game
+              {gameStarting ? "Starting..." : "Start Game"}
             </button>
           )}
         </div>

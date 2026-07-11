@@ -49,29 +49,10 @@ const WonRounds = ({ wonRounds }: Props) => {
                         height={96}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute bottom-1 right-1">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
-                          ${type === "FIRE" ? "bg-red-500" :
-                            type === "WATER" ? "bg-blue-500" : "bg-cyan-400"}`}
-                        >
-                          {type === "FIRE" ? "🔥" : 
-                           type === "WATER" ? "💧" : "❄️"}
-                        </div>
-                      </div>
-                    
                   </div>
                 ))}
              </div>
              
-             <div className="mt-2 text-center">
-               <span className={`text-xs font-bold px-2 py-1 rounded-full
-                 ${type === "FIRE" ? "bg-red-500/20 text-red-300" :
-                   type === "WATER" ? "bg-blue-500/20 text-blue-300" :
-                   "bg-cyan-500/20 text-cyan-300"}`}
-               >
-                 {groups[type].length} {type}
-               </span>
-             </div>
           </div>
         )
       ))}
