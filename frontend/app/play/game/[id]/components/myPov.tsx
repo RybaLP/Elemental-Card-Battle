@@ -36,9 +36,6 @@ const MyPov = ({ cardsInHand, sessionId }: Props) => {
 
   return (
     <div className="flex flex-col items-end">
-      <div className="mb-6 text-center">
-        <h3 className="text-white text-2xl font-bold">Your Hand</h3>
-      </div>
 
       <div className="grid grid-cols-2 grid-rows-2 gap-6">
         {cardsInHand.map((card, index) => {
@@ -73,42 +70,13 @@ const MyPov = ({ cardsInHand, sessionId }: Props) => {
                   </div>
                 )}
 
-                <div
-                  className={`absolute top-3 left-3 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 ${
-                    card.elementalType === "FIRE"
-                      ? "bg-red-500 border-red-300"
-                      : card.elementalType === "WATER"
-                      ? "bg-blue-500 border-blue-300"
-                      : "bg-cyan-400 border-cyan-300"
-                  }`}
-                >
-                  {card.elementalType === "FIRE"
-                    ? "🔥"
-                    : card.elementalType === "WATER"
-                    ? "💧"
-                    : "❄️"}
-                </div>
-
-                <div className="absolute bottom-3 right-3 bg-black/80 text-yellow-300 text-base font-bold px-3 py-1.5 rounded-lg">
-                  ⚔️ {card.power || 0}
-                </div>
               </div>
 
-              <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-gray-700 border border-gray-500 flex items-center justify-center text-sm text-white font-bold">
-                {index + 1}
-              </div>
             </div>
           );
         })}
       </div>
 
-      <div className="mt-8 text-right">
-        <p className="text-gray-400 text-sm">
-          {selectedCard
-            ? "✓ Card selected - Waiting for opponent"
-            : "Click a card to select for battle"}
-        </p>
-      </div>
     </div>
   );
 };

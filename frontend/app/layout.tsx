@@ -17,7 +17,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Elemental Card Battle",
   description: "Multiplayer card game for two players. Battle with elemental cards and outsmart your opponent!",
+    icons: {
+    icon: '/ecb.svg',
+  }
 };
+
+
 
 export default function RootLayout({
   children,

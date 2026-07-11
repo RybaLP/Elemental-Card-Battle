@@ -16,10 +16,10 @@ export const createPrivateRoom = async (name: string, password: string): Promise
     return res.data;
 };
 
-export const getCurrentRoom = async () : Promise<Room> => {
+export const getCurrentRoom = async (): Promise<Room> => {
     const res = await privateClient.get("/rooms/current");
     return res.data;
-}
+};
 
 export const getRoomById = async (roomId: string): Promise<Room> => {
     const res = await privateClient.get(`/rooms/${roomId}`);
@@ -35,12 +35,17 @@ export const leaveRoom = async (): Promise<void> => {
     await privateClient.post("/rooms/leave");
 };
 
-export const addBot = async (roomId: string): Promise<Room> => {
-    const res = await privateClient.post("/rooms/add-bot", { roomId });
+export const addBot = async (): Promise<Room> => {
+    const res = await privateClient.post("/rooms/add-bot");
     return res.data;
 };
 
-export const kickBot = async (roomId: string, botId: number | null): Promise<Room> => {
-    const res = await privateClient.post(`/rooms/${roomId}/kick-bot`, { botId });
+export const kickBot = async (): Promise<Room> => {
+    const res = await privateClient.post("/rooms/kick-bot");
+    return res.data;
+};
+
+export const kickPlayer = async (): Promise<Room> => {
+    const res = await privateClient.post("/rooms/kick-player");
     return res.data;
 };

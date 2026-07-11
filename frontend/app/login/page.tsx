@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import AnimatedBackground from "@/components/animatedBg";
 import { login, register } from "@/api/auth";
 
@@ -46,6 +47,14 @@ export default function LoginPage() {
     return (
         <main className="relative min-h-screen">
             <AnimatedBackground />
+
+            {/* Back Button */}
+            <Link 
+                href="/" 
+                className="fixed top-6 left-6 z-50 px-4 py-2 rounded-lg bg-purple-900/80 backdrop-blur-md border border-purple-500/50 text-white hover:border-cyan-400/50 transition-all duration-200 text-sm font-black uppercase tracking-wider"
+            >
+                ← Back
+            </Link>
 
             <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4">
                 <Image alt="logo" width={140} height={140} src="/logo-.png" className="mb-8" />

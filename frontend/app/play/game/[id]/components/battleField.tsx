@@ -22,9 +22,6 @@ const BattleField = () => {
                 alt={selectedCard.name} 
                 className="w-full h-full object-cover"
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-linear-to-r from-black/90 to-transparent p-4">
-                <h3 className="text-white text-lg font-bold">{selectedCard.name}</h3>
-              </div>
             </div>
           ) : (
             <div className="w-72 h-96 rounded-2xl border-4 border-dashed border-blue-300/50 flex flex-col items-center justify-center bg-linear-to-br from-blue-900/30 to-gray-900/30">
@@ -44,9 +41,6 @@ const BattleField = () => {
                     alt={enemySelectedCard.name} 
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/90 to-transparent p-4">
-                    <h3 className="text-white text-lg font-bold">{enemySelectedCard.name}</h3>
-                  </div>
                 </div>
               ) : (
                 <div className="w-full h-full relative">
